@@ -286,7 +286,7 @@ class PybulletSim:
 				[size[0]/2, size[1]/2, size[2]/2, 0.2, 0.2, 0.0])
 
 			# append
-			sq = SuperQuadric(T, parameter, type="superellipsoid")
+			sq = SuperQuadric(T, parameter, type="superellipsoid") #call SuperQuadric class
 			sq_list.append(sq)
 
 		return sq_list

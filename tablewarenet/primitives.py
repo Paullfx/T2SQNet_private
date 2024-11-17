@@ -76,6 +76,7 @@ def mesh_superellipsoid(parameters, resolution=20):
 	omega = np.arctan2(vertices_numpy[:, 1:2], vertices_numpy[:, 0:1])
 
 	# make new vertices
+	# superellipsoid equation
 	x = a1 * fexp(np.cos(eta), e1) * fexp(np.cos(omega), e2)
 	y = a2 * fexp(np.cos(eta), e1) * fexp(np.sin(omega), e2)
 	z = a3 * fexp(np.sin(eta), e1)
@@ -179,7 +180,7 @@ def mesh_superparaboloid(
 	u = vertices_numpy[:,2:3]
 	omega = np.arctan2(vertices_numpy[:,1:2], vertices_numpy[:,0:1])
 	
-	# make new vertices
+	# make new vertices ## sperparaboloid equation in polar coord
 	x = a1 * u * fexp(np.cos(omega), e2) * normxy
 	y = a2 * u * fexp(np.sin(omega), e2) * normxy
 	z = a3 * (fexp(u, 2/e1) - 1) 
