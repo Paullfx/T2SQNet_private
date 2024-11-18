@@ -8,8 +8,8 @@ loader_type_dict = {
     'voxel': VoxelDataset
 }
 
-def get_dataloader(cfg_data, ddp=False):
-    dataset = get_dataset(cfg_data)
+def get_dataloader(cfg_data, ddp=False): #dataloader main body
+    dataset = get_dataset(cfg_data) #call the get_dataset function
     list_item = cfg_data.get('list_item', [])
     
     def collate_fn(datas):

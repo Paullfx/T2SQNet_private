@@ -41,11 +41,11 @@ def run(cfg):
         dist.barrier()
     
     # Setup dataloader
-    d_dataloaders = {}
+    d_dataloaders = {} 
     loggers = {}
     for key, dataloader_cfg in cfg["data"].items():
         if key == 'training':
-            d_dataloaders[key] = get_dataloader(dataloader_cfg, ddp=ddp)
+            d_dataloaders[key] = get_dataloader(dataloader_cfg, ddp=ddp) #data loader entrance, ddp =false
         else:
             d_dataloaders[key] = get_dataloader(dataloader_cfg)
     
@@ -54,7 +54,7 @@ def run(cfg):
         loggers[key] = get_logger(logger_cfg)
     
     # Setup model
-    model = get_model(cfg['model']).to(device)
+    model = get_model(cfg['model']).to(device) #net = Net()
     if ddp:
         model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
         model = torch.nn.parallel.DistributedDataParallel(model, device_ids = [device])
@@ -63,7 +63,7 @@ def run(cfg):
     trainer = get_trainer(cfg['trainer'])
 
     # Setup optimizer, lr_scheduler and loss function
-    params = itertools.chain(filter(lambda p: p.requires_grad, model.parameters()))
+    params = itertools.chain(filter(lambda p: p.requires_grad, model.parameters())) #filter out grt_grad=true and pss into optimizer
     optimizer = get_optimizer(cfg["trainer"]["optimizer"], params)
     scheduler_cfg = cfg["trainer"].get("scheduler", None)
     if scheduler_cfg is not None:

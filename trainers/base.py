@@ -3,7 +3,7 @@ import torch
 from tqdm import tqdm, trange
 import torch.distributed as dist
 
-class BaseTrainer:
+class BaseTrainer: #train: loss? optimizer? # It also contains evaluation
     """Trainer for a conventional iterative training of model"""
     def __init__(self, training_cfg, device):
         self.cfg = training_cfg
@@ -40,7 +40,7 @@ class BaseTrainer:
             t_iter = tqdm(train_loader, leave=False)
             i_iter = 0
             model.train()
-            for data in t_iter:
+            for data in t_iter: # loss bavkprop
                 if ddp:
                     data_train = model.module.train_step(data, optimizer=opt, device=self.device, ddp_model=model)
                 else:
