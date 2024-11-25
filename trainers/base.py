@@ -40,7 +40,7 @@ class BaseTrainer: #train: loss? optimizer? # It also contains evaluation
             t_iter = tqdm(train_loader, leave=False)
             i_iter = 0
             model.train()
-            for data in t_iter: # loss bavkprop
+            for data in t_iter: # loss backprop
                 if ddp:
                     data_train = model.module.train_step(data, optimizer=opt, device=self.device, ddp_model=model)
                 else:

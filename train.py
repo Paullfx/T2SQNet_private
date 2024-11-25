@@ -89,12 +89,12 @@ if __name__ == "__main__":
     args, unknown = parser.parse_known_args()
     d_cmd_cfg = parse_unknown_args(unknown)
     d_cmd_cfg = parse_nested_args(d_cmd_cfg)
-    print(d_cmd_cfg)
+    # print(d_cmd_cfg)
     
-    print(args.config)
+    # print(args.config)
     cfg = load_cfg_with_base(args.config)
     cfg = OmegaConf.merge(cfg, d_cmd_cfg)
-    print(OmegaConf.to_yaml(cfg))
+    # print(OmegaConf.to_yaml(cfg))
     
     ddp = False
     if args.device == "cpu":
@@ -135,7 +135,7 @@ if __name__ == "__main__":
             os.makedirs(logdir)
         save_yaml(copied_yml, OmegaConf.to_yaml(cfg))
         wandb.init(
-            entity=cfg['entity'],
+            #entity=cfg['entity'],
             project=cfg['wandb_project_name'],
             config=OmegaConf.to_container(cfg),
             name=logdir

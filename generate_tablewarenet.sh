@@ -2,7 +2,10 @@
 
 # blender setting
 BLENDER_BIN=~/blender-4.0.2-linux-x64/./blender
-BLENDER_PROJ_PATH=assets/materials/material_lib_graspnet-v2.blend
+#BLENDER_PROJ_PATH=assets/materials/material_lib_graspnet-v2.blend
+BLENDER_PROJ_PATH=/home/hamilton/Master_thesis/T2SQNet-public/assets/materials/material_lib_graspnet-v2.blend
+
+#/home/hamilton/Master_thesis/T2SQNet-public
 
 # Generate Scene using PyBullet
 python generate_tableware_pybullet.py \

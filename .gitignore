@@ -2,3 +2,10 @@
 __pycache__/
 pretrained/
 temporary/
+
+datasets/
+pretrained/
+da/
+datasets_old/
+results/
+wandb/

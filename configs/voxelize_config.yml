@@ -1,7 +1,7 @@
-data_path: datasets/full_type_table
+data_path: datasets
 debug: false
 enable_gui: false
-folder_name: full_type_table_1
+folder_name: test
 full_view: false
 marginal_bbox_size:
   BeerBottle:

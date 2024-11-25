@@ -1,7 +1,7 @@
 # experiment type
 exp_type: sim                     # sim, real
 recog_type: t2sqnet_rgb           # t2sqnet_gt, t2sqnet_rgb
-sim_type: table                   # table, shelf
+sim_type: shelf                   # table, shelf
 task_type: target_retrieval       # clear_clutter, target_retrieval
 
 # task setting

@@ -361,14 +361,15 @@ class TSQPipeline():
 			# bbox to voxel
 			object_idx = name_to_idx[c]
 			object_class = c
-			t = time.time()
-			voxel = self.bbox2voxel(bbox, object_class, mask_imgs, camera_params)
+			# t = time.time()
+			voxel = self.bbox2voxel(bbox, object_class, mask_imgs, camera_params)   # pure math, no net , 1984
 			# print(f'bbox2voxel elapsed time: {time.time() - t}')
 
-			# parameter prediction
-			voxel_scale = torch.tensor(self.voxel_size[object_class]).unsqueeze(0).to(self.device)
-			t = time.time()
-			obj_info = self.param_predictors[object_idx](voxel.unsqueeze(0), voxel_scale).squeeze()
+			# parameter prediction                                                                    
+			voxel_scale = torch.tensor(self.voxel_size[object_class]).unsqueeze(0).to(self.device)  
+			
+			t = time.time()																			# voxel -> param
+			obj_info = self.param_predictors[object_idx](voxel.unsqueeze(0), voxel_scale).squeeze()# voxelhead with resnet3d as backbone and FCvec for last step
 			# print(f'param_predictors elapsed time: {time.time() - t}')
 			pose = torch.eye(4).to(self.device)
 			pose[0:3, 3] = obj_info[0:3] + bbox[0:3]
@@ -379,7 +380,7 @@ class TSQPipeline():
 			pose[1, 0] = torch.sin(angle)
 			pose[1, 1] = torch.cos(angle)
 			
-			# reconstruct object
+			# reconstruct object                         use parasm to create superQ classes
 			obj = name_to_class[object_class](
 				SE3=pose.detach(),
 				params=obj_info[5:].detach(),

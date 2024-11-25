@@ -2,7 +2,8 @@ wandb_project_name: TSQ_bbox
 data:
   training:
     dataset: detr3d
-    roots: [datasets/full_type_table/full_type_table_1, datasets/full_type_table/full_type_table_2, datasets/full_type_table/full_type_table_3, datasets/full_type_table/full_type_table_4]
+    # roots: [datasets/full_type_table/full_type_table_1, datasets/full_type_table/full_type_table_2, datasets/full_type_table/full_type_table_3, datasets/full_type_table/full_type_table_4]
+    roots: [datasets/test]
     split: training
     list_item: [gt_pose, gt_param]
     max_data_num: 99999999
@@ -16,12 +17,13 @@ data:
       max_num_hole: 2
       min_cutout_len: 50
       max_cutout_len: 100
-    batch_size: 8
+    batch_size: 1  # changed from 8
     shuffle: True
     num_workers: 0
   validation:
     dataset: detr3d
-    roots: [datasets/full_type_table/full_type_table_1, datasets/full_type_table/full_type_table_2, datasets/full_type_table/full_type_table_3, datasets/full_type_table/full_type_table_4]
+    # roots: [datasets/full_type_table/full_type_table_1, datasets/full_type_table/full_type_table_2, datasets/full_type_table/full_type_table_3, datasets/full_type_table/full_type_table_4]
+    roots: [datasets/test]
     split: validation
     list_item: [gt_pose, gt_param]
     max_data_num: 999999999
@@ -30,7 +32,7 @@ data:
     reduce_ratio: 1
     preload: False
     channel3: True
-    batch_size: 8
+    batch_size: 1  # changed from 8
     shuffle: True
     num_workers: 0
 model:

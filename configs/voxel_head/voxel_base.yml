@@ -2,7 +2,9 @@ wandb_project_name: Voxel_smooth
 data:
   training:
     dataset: voxel
-    roots: [datasets/table_voxel/full_type_table_1_voxelized, datasets/table_voxel/full_type_table_2_voxelized, datasets/table_voxel/full_type_table_3_voxelized, datasets/table_voxel/full_type_table_4_voxelized]
+    roots: [datasets/test_voxelized]
+    # roots: [datasets/table_voxel/full_type_table_1_voxelized, datasets/table_voxel/full_type_table_2_voxelized]
+    # , datasets/table_voxel/full_type_table_3_voxelized, datasets/table_voxel/full_type_table_4_voxelized]
     split: training
     max_data_num: 999999
     batch_size: 32
@@ -11,7 +13,9 @@ data:
     preload : False
   validation:
     dataset: voxel
-    roots: [datasets/table_voxel/full_type_table_1_voxelized, datasets/table_voxel/full_type_table_2_voxelized, datasets/table_voxel/full_type_table_3_voxelized, datasets/table_voxel/full_type_table_4_voxelized]
+    roots: [datasets/test_voxelized]
+    # roots: [datasets/table_voxel/full_type_table_1_voxelized, datasets/table_voxel/full_type_table_2_voxelized]
+    # , datasets/table_voxel/full_type_table_3_voxelized, datasets/table_voxel/full_type_table_4_voxelized]
     split: validation
     max_data_num: 999999
     batch_size: 32

@@ -810,7 +810,7 @@ class Controller:
 					self.depth_img_list.cpu().numpy())    			
 
 			# tsqnet inference
-			results = self.tsqnet.forward(
+			results = self.tsqnet.forward(              #critical IO Fuxiao 
 				img_list, camera_params, 
 				text_prompt=self.text_prompt, 
 				conf_thld=self.conf_thld,
