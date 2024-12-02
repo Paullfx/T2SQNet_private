@@ -1,6 +1,7 @@
 #!/bin/bash
 
-BLENDER_BIN=~/blender-4.0.2-linux-x64/./blender
+#BLENDER_BIN=~/blender-4.0.2-linux-x64/./blender # at home desktop
+BLENDER_BIN=/home/fuxiao/Downloads/blender-4.0.2-linux-x64 #at working station
 BLENDER_PROJ_PATH=assets/materials/material_lib_graspnet-v2.blend
 
 $BLENDER_BIN $BLENDER_PROJ_PATH --background \
