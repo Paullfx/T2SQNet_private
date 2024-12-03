@@ -4,6 +4,7 @@ import platform
 import time
 import cv2
 import threading
+import pickle
 from datetime import datetime
 if platform.system() == "Linux":
 	from utils.suppress_logging import suppress_output
@@ -817,6 +818,16 @@ class Controller:
 				from_mask_imgs=self.background_sam,
 				output_all=True
 			)
+
+			#save the results in './intermediates/scene_id_default/results', results is 4-dim Tuples
+			output_dir_results = './intermediates/scene_id_default/results'
+			if not os.path.exists(output_dir_results):
+				os.makedirs(output_dir_results)
+			with open(os.path.join(output_dir_results, 'results.pkl'), 'wb') as f:
+				pickle.dump(results, f)
+
+
+
 
 			# object info
 			obj_list = results[-1][0]

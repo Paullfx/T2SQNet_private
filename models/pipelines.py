@@ -145,22 +145,53 @@ class TSQPipeline():
 			camera_projection_matrices = camera_params["projection_matrices"].float().to(self.device)
 			img_size = camera_params["camera_image_size"].float().to(self.device)
 
+
+
+			# get and store camera_pose and camera_intr in './intermediates/scene_id_default/camera_pose_and_intr'
+			output_dir = './intermediates/scene_id_default/camera_pose_and_intr'
+			if not os.path.exists(output_dir):
+				os.makedirs(output_dir)
+			#camera_pose = camera_params["camera_pose"] is an array of 7*4*4, to save it
+			camera_pose = camera_params["camera_pose"] 
+			camera_intr = camera_params["camera_intr"]
+			np.save(os.path.join(output_dir, 'camera_pose.npy'), camera_pose)
+			np.save(os.path.join(output_dir, 'camera_intr.npy'), camera_intr)
+
 			# get mask images
 			if not from_mask_imgs:
 				t = time.time()
 				imgs = self.rgb2mask(imgs, text_prompt, num_aug=self.num_augs)
-				# print(f'ellapsed time from rgb to mask: {time.time() - t}')
+				print(f'ellapsed time from rgb to mask: {time.time() - t}')
 
 			# get bounding boxes
 			t = time.time()
 			bboxes, cls = self.mask2bbox(imgs, camera_projection_matrices, img_size, conf_thld)
-			# print(f'ellapsed time from mask to bbox: {time.time() - t}')
+			print(f'ellapsed time from mask to bbox: {time.time() - t}')
+			#save the bboexs and cls in folder './intermediates/scene_id_default/bboxes_cls'
+			output_dir = './intermediates/scene_id_default/bboxes_cls'
+			if not os.path.exists(output_dir):
+				os.makedirs(output_dir)
+			with open(os.path.join(output_dir, 'bboxes.pkl'), 'wb') as f:
+				pickle.dump(bboxes, f)
+			with open(os.path.join(output_dir, 'cls.pkl'), 'wb') as f:
+				pickle.dump(cls, f)
+
 
 			# infer objects
 			t = time.time()
 			obj_list = self.infer_obj(bboxes, cls, imgs, camera_params)
-			# print(f'ellapsed time from bbox to object: {time.time() - t}')
+			print(f'ellapsed time from bbox to object: {time.time() - t}')
 
+			# Define the save path
+			save_dir = './intermediates/scene_id_default/object_list'
+			os.makedirs(save_dir, exist_ok=True)  # Create the directory if it doesn't exist
+
+			# Save the object_list as a pickle file
+			save_path = os.path.join(save_dir, "object_list.pkl")
+			with open(save_path, 'wb') as f:
+				pickle.dump(obj_list, f)  # Serialize and save the tuple
+			print(f"object_list saved to {save_path}")
+			
 			if output_all and not from_mask_imgs:
 				return imgs, bboxes, cls, obj_list
 			elif output_all and from_mask_imgs:
@@ -246,7 +277,21 @@ class TSQPipeline():
 
 	def rgb2mask(self, imgs, text_prompt, num_aug=5):
 		# get mask tensors from RGB 255 scale imgs
-		
+
+    	# save and print imgs input
+		output_dir = './intermediates/scene_id_default/imgs_inputs'
+		if not os.path.exists(output_dir):
+			os.makedirs(output_dir)
+
+    # save and print imgs input
+		for i, img in enumerate(imgs):
+        # convert the 7*3*240*320 tensor into 7 png imgs
+			img_png = img.permute(1, 2, 0).detach().cpu().numpy().astype(np.uint8)
+			img_png = Image.fromarray(img_png)# save png imgs in the T2SQNet/intermediates/scene_id/imgs_inputs
+			img_png.save(os.path.join(output_dir, f'{i}.png'))
+
+
+
 		# color jittering
 		hue_trans = torch.linspace(-0.25, 0.25, num_aug-1)
 		mask_jitt = []
@@ -261,20 +306,29 @@ class TSQPipeline():
 					(img*255).permute(1, 2, 0).detach().cpu().numpy().astype(np.uint8)
 				)
 				masks, _, _, _ = self.mask_predictor.predict(image_pil, text_prompt)
-				masks = (masks.sum(dim=0) > 0).float()
-				mask_imgs.append(masks)
-			mask_imgs = torch.stack(mask_imgs).to(self.device)
-			mask_jitt.append(mask_imgs)
+				masks = (masks.sum(dim=0) > 0).float() #sum masks of all detected objects in one RGB image
+
+				mask_imgs.append(masks) # a list of masks of 7 input RGB
+			mask_imgs = torch.stack(mask_imgs).to(self.device) # list to tensor
+			mask_jitt.append(mask_imgs) # 
 		mask_jitt = torch.stack(mask_jitt) #  J x V x H x W
 		mask_jitt = (mask_jitt.sum(dim=0) >= 0.99).float() # V x H x W
+		# save the masks in folder './intermediates/scene_id_default/masks'
+		output_dir = './intermediates/scene_id_default/masks'
+		if not os.path.exists(output_dir):
+			os.makedirs(output_dir)
+		for i, mask in enumerate(mask_jitt):
+			mask_png = Image.fromarray((mask*255).detach().cpu().numpy().astype(np.uint8))
+			mask_png.save(os.path.join(output_dir, f'{i}.png'))
 		return mask_jitt
 	
 	def mask2bbox(self, mask_imgs, camera_projection_matrices, img_size, conf_thld):
 		if self.use_dummy_data:
-			dummy_mask_imgs, dummy_projection_matrices, dummy_img_size = self.get_random_dummy()
-			mask_imgs = torch.cat([mask_imgs.unsqueeze(0), dummy_mask_imgs.to(self.device)], dim=0).float()
+			dummy_mask_imgs, dummy_projection_matrices, dummy_img_size = self.get_random_dummy() #dmuuy_mask_imgs.size 7*7*240*320
+			mask_imgs = torch.cat([mask_imgs.unsqueeze(0), dummy_mask_imgs.to(self.device)], dim=0).float() # mask_imgs.size 8*7*249*320
 			camera_projection_matrices = torch.cat([camera_projection_matrices.unsqueeze(0), dummy_projection_matrices.to(self.device)], dim=0).float()
-			img_size = torch.cat([img_size.unsqueeze(0), dummy_img_size.to(self.device)], dim=0).float()
+			#concatinated camera_projection_matrices.size 8*7*3*4
+			img_size = torch.cat([img_size.unsqueeze(0), dummy_img_size.to(self.device)], dim=0).float() #8*2 
 			bounding_box_list, conf_list, _, _ = self.bbox_predictor(
 	   			mask_imgs.unsqueeze(2).repeat(1, 1, 3, 1, 1),
 		  		camera_projection_matrices,
@@ -284,10 +338,10 @@ class TSQPipeline():
 		else:
 			# get bboxes
 			bounding_box_list, conf_list, _, _ = self.bbox_predictor(
-				mask_imgs.unsqueeze(0).unsqueeze(2).repeat(1, 1, 3, 1, 1),
+				mask_imgs.unsqueeze(0).unsqueeze(2).repeat(1, 1, 3, 1, 1), #possibly mask grayscale to RGB
 				camera_projection_matrices.unsqueeze(0),
 				img_size.unsqueeze(0)
-			)
+			)# bbox_predictor is the DETR3D, fuxiao still stays in high level and do not dig deep into the struture.
 			bboxes = bounding_box_list[-1].squeeze()
 			confs = conf_list[-1].squeeze()
 		valid_idxs = torch.arange(self.query_num).to(self.device)[confs > conf_thld]
@@ -314,21 +368,24 @@ class TSQPipeline():
 				np.array([bbox[2] - bbox[5] + max_bbox_size[2]]),
 				max_bbox_size), 
 			axis=0
-		)
+		)#not sure
 		marginal_bbox = np.concatenate(
 			(
 				bbox[0:2], 
 				np.array([bbox[2] - bbox[5] + marginal_bbox_size[2]]),
 				marginal_bbox_size), 
 			axis=0
-		)
+		)#not sure
 
 		# voxel carving
 		raw_voxel = voxel_carving(
 			mask_imgs, camera_params, marginal_bbox, voxel_size,
 			device='cuda:0', smoothed=True)
 		w, h, d = raw_voxel.shape
-		
+
+
+
+
 		# get bounding box inside voxels
 		w_min1 = math.floor(w * (marginal_bbox[3] - max_bbox[3]) / (2 * marginal_bbox[3]))
 		w_max1 = math.ceil(w * (marginal_bbox[3] + max_bbox[3]) / (2 * marginal_bbox[3]))
@@ -363,7 +420,9 @@ class TSQPipeline():
 			object_class = c
 			# t = time.time()
 			voxel = self.bbox2voxel(bbox, object_class, mask_imgs, camera_params)   # pure math, no net , 1984
-			# print(f'bbox2voxel elapsed time: {time.time() - t}')
+			#print(f'bbox2voxel elapsed time: {time.time() - t}')
+			
+
 
 			# parameter prediction                                                                    
 			voxel_scale = torch.tensor(self.voxel_size[object_class]).unsqueeze(0).to(self.device)  

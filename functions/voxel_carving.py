@@ -7,9 +7,9 @@ def voxel_carving(
 		device='cuda:0', smoothed=False):
 	
 	# camera
-	projections = camera['projection_matrices'].float()
+	projections = camera['projection_matrices'].float() #projections is tensor with size 7*3*4
 	imgH, imgW = camera['camera_image_size']
-	silhouettes = mask_imgs
+	silhouettes = mask_imgs#tensro.size 7*240*320
 
 	# function for calculation
 	def pointer_at_batch(image, u, v):
@@ -19,11 +19,11 @@ def voxel_carving(
 		return image.view(-1)[indices]
 
 	# parameters
-	w = floor(2 * bbox[3] / voxel_size + 0.5)
+	w = floor(2 * bbox[3] / voxel_size + 0.5) #fuxiao believes, width of grid, bbox[3] is the width of the bounding box
 	h = floor(2 * bbox[4] / voxel_size + 0.5)
 	d = floor(2 * bbox[5] / voxel_size + 0.5)
 	grid_x = torch.linspace(
-		bbox[0] - bbox[3] + voxel_size * 0.5, bbox[0] + bbox[3] - voxel_size * 0.5, w)
+		bbox[0] - bbox[3] + voxel_size * 0.5, bbox[0] + bbox[3] - voxel_size * 0.5, w)# span the grid
 	grid_y = torch.linspace(
 		bbox[1] - bbox[4] + voxel_size * 0.5, bbox[1] + bbox[4] - voxel_size * 0.5, h)
 	grid_z = torch.linspace(
@@ -98,6 +98,6 @@ def voxel_carving(
 		occupancy = filled / len(projections)
 	else:
 		occupancy = torch.zeros_like(filled)
-		occupancy[filled >= len(projections)] = 1
+		occupancy[filled >= len(projections)] = 1 #tensor size 42*42*100, the grid within the bbox
 
 	return occupancy
