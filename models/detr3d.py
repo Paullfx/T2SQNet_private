@@ -97,8 +97,8 @@ class DERT3D(nn.Module):
             
             ref_pos_list.append(reference_position)
             
-            bounding_box = bounding_box_predictor(queries)
-            conf = confidence_predictor(queries)
+            bounding_box = bounding_box_predictor(queries) #bbox firstly generated here #bounding_box_predictor = FC_vec
+            conf = confidence_predictor(queries)# confidence_predictor = FC_vec
             
             bounding_box_list.append(bounding_box)
             conf_list.append(conf)

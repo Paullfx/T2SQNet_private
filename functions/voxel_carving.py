@@ -3,7 +3,7 @@ from math import floor, ceil
 from copy import deepcopy
 
 def voxel_carving(
-		mask_imgs, camera, bbox, voxel_size, 
+		mask_imgs, camera, bbox, voxel_size, #here the bbox is marginal bbox
 		device='cuda:0', smoothed=False):
 	
 	# camera
@@ -19,7 +19,7 @@ def voxel_carving(
 		return image.view(-1)[indices]
 
 	# parameters
-	w = floor(2 * bbox[3] / voxel_size + 0.5) #fuxiao believes, width of grid, bbox[3] is the width of the bounding box
+	w = floor(2 * bbox[3] / voxel_size + 0.5) # width of grid, bbox[3] is the width of the marginal bounding box
 	h = floor(2 * bbox[4] / voxel_size + 0.5)
 	d = floor(2 * bbox[5] / voxel_size + 0.5)
 	grid_x = torch.linspace(
@@ -29,7 +29,7 @@ def voxel_carving(
 	grid_z = torch.linspace(
 		bbox[2] - bbox[5] + voxel_size * 0.5, bbox[2] + bbox[5] - voxel_size * 0.5, d)
 	x, y, z = torch.meshgrid(grid_x, grid_y, grid_z, indexing='ij')
-	pts = torch.stack([x.flatten(), y.flatten(), z.flatten(), torch.ones_like(z.flatten())])
+	pts = torch.stack([x.flatten(), y.flatten(), z.flatten(), torch.ones_like(z.flatten())]) # 4*w*h*d
 
 	# carving
 	filled = []
@@ -98,6 +98,6 @@ def voxel_carving(
 		occupancy = filled / len(projections)
 	else:
 		occupancy = torch.zeros_like(filled)
-		occupancy[filled >= len(projections)] = 1 #tensor size 42*42*100, the grid within the bbox
+		occupancy[filled >= len(projections)] = 1 #tensor size e.g. 42*42*100, 125*125*21, the grid within the bbox
 
 	return occupancy

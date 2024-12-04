@@ -3,6 +3,7 @@ import numpy as np
 
 # Define the directory and file names
 output_dir = './intermediates/scene_id_default/camera_pose_and_intr'
+#output_dir = './intermediates/blender_shelf_0_4/camera_pose_and_intr'
 camera_pose_file = os.path.join(output_dir, 'camera_pose.npy')
 camera_intr_file = os.path.join(output_dir, 'camera_intr.npy')
 

@@ -368,14 +368,14 @@ class TSQPipeline():
 				np.array([bbox[2] - bbox[5] + max_bbox_size[2]]),
 				max_bbox_size), 
 			axis=0
-		)#not sure
+		)# y,z,(x-0.5d)+(x_max-0.5d), w_max, h_max,d_max
 		marginal_bbox = np.concatenate(
 			(
 				bbox[0:2], 
 				np.array([bbox[2] - bbox[5] + marginal_bbox_size[2]]),
 				marginal_bbox_size), 
 			axis=0
-		)#not sure
+		)#
 
 		# voxel carving
 		raw_voxel = voxel_carving(

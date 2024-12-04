@@ -41,7 +41,8 @@ def draw_3d_bbox(ax, bbox, label=None, color='blue'):
         ax.text(x, y, z, label, color=color)
 
 # Define the input directory for bbox and class files
-input_dir = './intermediates/scene_id_default/bboxes_cls'
+exp_index = "blender_shelf_0_5"  #blender_shelf_0_5 #scene_id_default
+input_dir = './intermediates/{exp_index}/bboxes_cls'
 
 # Check if the directory exists
 if not os.path.exists(input_dir):
