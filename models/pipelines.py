@@ -416,7 +416,7 @@ class TSQPipeline():
 		for bbox, c in zip(bboxes, cls):
 				
 			# bbox to voxel
-			object_idx = name_to_idx[c]
+			object_idx = name_to_idx[c]												# bbox -> voxel						
 			object_class = c
 			# t = time.time()
 			voxel = self.bbox2voxel(bbox, object_class, mask_imgs, camera_params)   # pure math, no net , 1984

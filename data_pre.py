@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 #dataset_root = Path("/home/hamilton/Master_thesis/test/inputData")
 dataset_root = Path("/home/fuxiao/Projects/Orbbec/concept-graphs/conceptgraph/dataset/external")
-scene_id = "tableware_3_9"
+scene_id = "tableware_2_2"
 
 # color_path = dataset_root / scene_id / "color"
 color_path = dataset_root / scene_id / "color"
