@@ -16,7 +16,7 @@ def main():
 
 #obj_info = self.param_predictors[object_idx](voxel.unsqueeze(0), voxel_scale).squeeze().
 
-
+#testtesttest
 
 if __name__ == "__main__":
     main()
