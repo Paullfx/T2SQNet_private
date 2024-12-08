@@ -19,6 +19,9 @@ Young Hun Kim*,
 
 > TL;DR: This paper proposes a novel framework for recognizing and manipulating partially observed transparent tableware objects.
 
+## Running on Fuxiao's working staton
+- In LSY working station, conda venv T2, branch fuxiao-desktop for stage 1.1 (Running the pretrained T2 pipeline), branch fuxiao-fitting for stage 1.2  (Run the superquadric-fitting module fo T2 on the segmented point cloud from ConceptGraph pipeline)
+
 ## Preview
 <I><b>Sequential Decluttering (Left):</b> T<sup>2</sup>SQNet-based method succeeds in sequentially grasping the objects without re-recognition, while avoiding collisions with other objects and the environment. </I>
 
