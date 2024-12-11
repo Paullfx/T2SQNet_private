@@ -19,8 +19,17 @@ Young Hun Kim*,
 
 > TL;DR: This paper proposes a novel framework for recognizing and manipulating partially observed transparent tableware objects.
 
-## Running on Fuxiao's working staton
+## Running on LSY working staton (Fuxiao)
 - In LSY working station, conda venv T2, branch fuxiao-desktop for stage 1.1 (Running the pretrained T2 pipeline), branch fuxiao-fitting for stage 1.2  (Run the superquadric-fitting module fo T2 on the segmented point cloud from ConceptGraph pipeline)
+## How to analyse the intermediate results of T2SQNet in simulation (Fuxiao)
+- Run the control.py in debug mode. Add comfig.  Add a breakpoint before the control part of the section (e.g. line 289 in controller.py)
+- Analyse and visualize the intermediate/scene_id_default
+## How to analyse the intermediate results of T2SQNet with real data (Fuxiao)
+- The file ./data_pre_cg.py is for the data-processing of conceptgraph data. In ./data_pre_cg.py, give the source_path of .pkl.gz (e.g. '/home/fuxiao/Projects/Orbbec/concept-graphs/conceptgraph/dataset/external/tableware_2_2/exps/exp_default/pcd_exp_default.pkl.gz'). This stores the segmented pointcloud outputted by Conceptgraph pipeline
+- The file ./data_pre.py is for preparing the color images and camera poses as the input for the T2SQNet pipeline. In ./data_pre.py, firstly give the dataset_root (e.g. Path("/home/fuxiao/Projects/Orbbec/concept-graphs/conceptgraph/dataset/external") and the scene_id (experiment index like "tableware_1_13") that you want to analyse. Give the acoording camera extrinsics (note that the camera extrinsics should fit the image size accordingly). Secondly, because the pretrained T2SQNet takes seven images as input, you need to select the seven images and give their selected_indices (e.g. ["000000", "000005", "000017", "000062", "000073", "000088", "000098"])
+- The file ./my_code.py calls the functions of T2SQNet model and load the prtrained model weights from t2sqnet_config.yml. Running the my_code.py script will generate a folder with name "scene_id_default" in the folder ./intermediates. Various intermediate results can be found in this folder. Remember to rename it with the according scene_id such that it won't be covered by next experiment
+- ./visualize_CG_T2_fuxiao.py is for plotting CG pcd, T2 pcd, and camera pose. ./visualize_only_bbox_pc.py is for plotting the bbox and the pcd of the fitted superquadrics../visualize_voxel_from_objList_copy.py for plotting the visual hull in form of voxels.
+- 
 
 ## Preview
 <I><b>Sequential Decluttering (Left):</b> T<sup>2</sup>SQNet-based method succeeds in sequentially grasping the objects without re-recognition, while avoiding collisions with other objects and the environment. </I>
@@ -90,7 +99,8 @@ The data generation process consists of three major parts.
 To check the usage of the code and generate your own dataset, please refer to the following shell script.
 
 ```shell
-./generate_tablewarenet.sh
+. generate_tablewarenet.sh
+# The original command "./generate_tablewarenet.sh" given by the author seems uncorrect (commented by Fuxiao)
 ```
 
 Based on the shell script, each step creates a folder, and each dictionary-style ``.pkl`` data file within each folder is structured as follows.
