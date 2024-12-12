@@ -14,10 +14,10 @@ if __name__ == "__main__":
 
 	# process cfg
 	args, unknown = parser.parse_known_args()
-	d_cmd_cfg = parse_unknown_args(unknown)
+	d_cmd_cfg = parse_unknown_args(unknown) # for unknown arg given in the terminal command, integrate the unknow arg into the cfg in form of dict
 	d_cmd_cfg = parse_nested_args(d_cmd_cfg)
 	cfg = OmegaConf.load(args.config)
-	cfg = OmegaConf.merge(cfg, d_cmd_cfg)
+	cfg = OmegaConf.merge(cfg, d_cmd_cfg) # merge and form the final cfg
 
 	# set device
 	if args.device == 'cpu':

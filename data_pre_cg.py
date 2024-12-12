@@ -6,8 +6,9 @@ import os
 
 
 # Path to the file
-#source_path = '/home/hamilton/Master_thesis/test/inputData/tableware_1_1/exps/exp_default/pcd_exp_default.pkl.gz'
-source_path = '/home/fuxiao/Projects/Orbbec/concept-graphs/conceptgraph/dataset/external/tableware_2_2/exps/exp_default/pcd_exp_default.pkl.gz'
+#source_path = '/home/hamilton/Master_thesis/test/inputData/tableware_1_13/exps/exp_default/pcd_exp_default.pkl.gz'
+source_path = '/home/hamilton/Master_thesis/data_cup1/exp_default/pcd_exp_default.pkl.gz'
+#source_path = '/home/fuxiao/Projects/Orbbec/concept-graphs/conceptgraph/dataset/external/tableware_2_2/exps/exp_default/pcd_exp_default.pkl.gz'
 file_path = os.path.splitext(source_path)[0]
 
 def load_pc_cg():

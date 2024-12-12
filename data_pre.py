@@ -5,16 +5,16 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 
 
-#dataset_root = Path("/home/hamilton/Master_thesis/test/inputData")
-dataset_root = Path("/home/fuxiao/Projects/Orbbec/concept-graphs/conceptgraph/dataset/external")
-scene_id = "tableware_2_2"
+dataset_root = Path("/home/hamilton/Master_thesis/test/inputData")
+#dataset_root = Path("/home/fuxiao/Projects/Orbbec/concept-graphs/conceptgraph/dataset/external")
+scene_id = "tableware_1_13"
 
 # color_path = dataset_root / scene_id / "color"
 color_path = dataset_root / scene_id / "color"
 pose_path = dataset_root / scene_id / "pose"
 intrinsics_path = dataset_root / scene_id / "intrinsics"
 
-selected_indices = ["000001", "000013", "000018", "000021", "000031", "000037", "000045"]
+selected_indices = ["000000", "000005", "000017", "000062", "000073", "000088", "000098"]
 
 def load_images(color_path, selected_indices, resize_shape=(320, 240), show_imgs=False):
 

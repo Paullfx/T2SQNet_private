@@ -165,13 +165,14 @@ class TSQPipeline():
 
 			# get bounding boxes
 			t = time.time()
-			bboxes, cls = self.mask2bbox(imgs, camera_projection_matrices, img_size, conf_thld)
+			bboxes, cls = self.mask2bbox(imgs, camera_projection_matrices, img_size, conf_thld) # true bbox
 			print(f'ellapsed time from mask to bbox: {time.time() - t}')
-			#save the bboexs and cls in folder './intermediates/scene_id_default/bboxes_cls'
+			# All objects are processed in the same batch, so saving the intermediates for only one time is sufficient
+			# save the bboexs and cls in folder './intermediates/scene_id_default/bboxes_cls'
 			output_dir = './intermediates/scene_id_default/bboxes_cls'
 			if not os.path.exists(output_dir):
 				os.makedirs(output_dir)
-			with open(os.path.join(output_dir, 'bboxes.pkl'), 'wb') as f:
+			with open(os.path.join(output_dir, 'bboxes.pkl'), 'wb') as f: # "bbox" as output of mask2bbox, true size 
 				pickle.dump(bboxes, f)
 			with open(os.path.join(output_dir, 'cls.pkl'), 'wb') as f:
 				pickle.dump(cls, f)
@@ -179,7 +180,7 @@ class TSQPipeline():
 
 			# infer objects
 			t = time.time()
-			obj_list = self.infer_obj(bboxes, cls, imgs, camera_params)
+			obj_list = self.infer_obj(bboxes, cls, imgs, camera_params) #true bbox, object[1][0] contains the voxel hulls
 			print(f'ellapsed time from bbox to object: {time.time() - t}')
 
 			# Define the save path
@@ -187,7 +188,7 @@ class TSQPipeline():
 			os.makedirs(save_dir, exist_ok=True)  # Create the directory if it doesn't exist
 
 			# Save the object_list as a pickle file
-			save_path = os.path.join(save_dir, "object_list.pkl")
+			save_path = os.path.join(save_dir, "object_list.pkl") # the voxel with size (Wimax /Li,Himax /Li,Dimax /Li)
 			with open(save_path, 'wb') as f:
 				pickle.dump(obj_list, f)  # Serialize and save the tuple
 			print(f"object_list saved to {save_path}")
@@ -341,7 +342,7 @@ class TSQPipeline():
 				mask_imgs.unsqueeze(0).unsqueeze(2).repeat(1, 1, 3, 1, 1), #possibly mask grayscale to RGB
 				camera_projection_matrices.unsqueeze(0),
 				img_size.unsqueeze(0)
-			)# bbox_predictor is the DETR3D, fuxiao still stays in high level and do not dig deep into the struture.
+			)# bbox_predictor is the DETR3D, fuxiao still stays in high level and do not dig deep into the struture of DETR3D.
 			bboxes = bounding_box_list[-1].squeeze()
 			confs = conf_list[-1].squeeze()
 		valid_idxs = torch.arange(self.query_num).to(self.device)[confs > conf_thld]
@@ -356,10 +357,10 @@ class TSQPipeline():
 	def bbox2voxel(self, bbox, object_class, mask_imgs, camera_params):
 		
 		# get parameters
-		voxel_size = self.voxel_size[object_class]
-		max_bbox_size = self.max_bbox_size[object_class]
-		marginal_bbox_size = self.marginal_bbox_size[object_class]
-		bbox = bbox.detach().cpu().numpy()
+		voxel_size = self.voxel_size[object_class] # passed in from voxelize_config.yml, voxel_size is class-dependent
+		max_bbox_size = self.max_bbox_size[object_class] # passed in from voxelize_config.yml, max_bbox_size is class-dependent
+		marginal_bbox_size = self.marginal_bbox_size[object_class] # passed in from voxelize_config.yml, marginal_bbox_size is class-dependent
+		bbox = bbox.detach().cpu().numpy() # in the implementation of stage_1_2, "bbox" is precisely visualized, which is obvioudly smaller than the superquadric pcd of the according tablewares
 			
 		# bounding box
 		max_bbox = np.concatenate(
@@ -368,14 +369,14 @@ class TSQPipeline():
 				np.array([bbox[2] - bbox[5] + max_bbox_size[2]]),
 				max_bbox_size), 
 			axis=0
-		)# y,z,(x-0.5d)+(x_max-0.5d), w_max, h_max,d_max
+		)# y,z,(x-0.5*d)+(x_max-d), w_max, h_max,d_max
 		marginal_bbox = np.concatenate(
 			(
 				bbox[0:2], 
 				np.array([bbox[2] - bbox[5] + marginal_bbox_size[2]]),
 				marginal_bbox_size), 
 			axis=0
-		)#
+		)# y,z,(x_marg)
 
 		# voxel carving
 		raw_voxel = voxel_carving(
@@ -395,7 +396,7 @@ class TSQPipeline():
 		d_max1 = math.ceil(d * (2 * max_bbox[5]) / (2 * marginal_bbox[5])) - 1
 
 		# get bounding box inside voxels
-		w_min2 = math.floor(w * (marginal_bbox[3] - bbox[3]) / (2 * marginal_bbox[3]))
+		w_min2 = math.floor(w * (marginal_bbox[3] - bbox[3]) / (2 * marginal_bbox[3])) # bbox here is the true bbox size
 		w_max2 = math.ceil(w * (marginal_bbox[3] + bbox[3]) / (2 * marginal_bbox[3]))
 		h_min2 = math.floor(h * (marginal_bbox[4] - bbox[4]) / (2 * marginal_bbox[4]))
 		h_max2 = math.ceil(h * (marginal_bbox[4] + bbox[4]) / (2 * marginal_bbox[4]))
@@ -404,22 +405,22 @@ class TSQPipeline():
 
 		# get input voxel value
 		inside_voxel = torch.zeros_like(raw_voxel).fill_(0.)
-		inside_voxel[w_min2:w_max2, h_min2:h_max2, d_min2:d_max2] = 1.
+		inside_voxel[w_min2:w_max2, h_min2:h_max2, d_min2:d_max2] = 1. # construct a smaller inside_voxel with size (Wtrue /Li,Htrue /Li,Dtrue /Li)
 		voxel = torch.stack([raw_voxel, inside_voxel])
-		voxel = voxel[:, w_min1:w_max1, h_min1:h_max1, d_min1:d_max1]
+		voxel = voxel[:, w_min1:w_max1, h_min1:h_max1, d_min1:d_max1] # crop the raw_voxel into (Wimax /Li,Himax /Li,Dimax /Li).
 		
 		return voxel.to(self.device)
 
-	def infer_obj(self, bboxes, cls, mask_imgs, camera_params):
+	def infer_obj(self, bboxes, cls, mask_imgs, camera_params): #true bbox
 		obj_list = []
 		voxel_info = []
-		for bbox, c in zip(bboxes, cls):
+		for bbox, c in zip(bboxes, cls): #true bbox
 				
 			# bbox to voxel
 			object_idx = name_to_idx[c]												# bbox -> voxel						
 			object_class = c
 			# t = time.time()
-			voxel = self.bbox2voxel(bbox, object_class, mask_imgs, camera_params)   # pure math, no net , 1984
+			voxel = self.bbox2voxel(bbox, object_class, mask_imgs, camera_params)   # pure math, no net , 1984 paper, true bbox
 			#print(f'bbox2voxel elapsed time: {time.time() - t}')
 			
 
@@ -428,13 +429,13 @@ class TSQPipeline():
 			voxel_scale = torch.tensor(self.voxel_size[object_class]).unsqueeze(0).to(self.device)  
 			
 			t = time.time()																			# voxel -> param
-			obj_info = self.param_predictors[object_idx](voxel.unsqueeze(0), voxel_scale).squeeze()# voxelhead with resnet3d as backbone and FCvec for last step
+			obj_info = self.param_predictors[object_idx](voxel.unsqueeze(0), voxel_scale).squeeze()# voxelhead with resnet3d as backbone and FCvec for last steps
 			# print(f'param_predictors elapsed time: {time.time() - t}')
 			pose = torch.eye(4).to(self.device)
-			pose[0:3, 3] = obj_info[0:3] + bbox[0:3]
+			pose[0:3, 3] = obj_info[0:3] + bbox[0:3]# translation term
 			pose[2, 3] -= bbox[5]
-			angle = torch.atan2(obj_info[4], obj_info[3])
-			pose[0, 0] = torch.cos(angle)
+			angle = torch.atan2(obj_info[4], obj_info[3]) # aarctan (a/b)
+			pose[0, 0] = torch.cos(angle) # typical rotation matrix
 			pose[0, 1] = -torch.sin(angle)
 			pose[1, 0] = torch.sin(angle)
 			pose[1, 1] = torch.cos(angle)
@@ -442,7 +443,7 @@ class TSQPipeline():
 			# reconstruct object                         use parasm to create superQ classes
 			obj = name_to_class[object_class](
 				SE3=pose.detach(),
-				params=obj_info[5:].detach(),
+				params=obj_info[5:].detach(), # first 3 are position infromation, the follwoing 2 are ori information, superquadric params start from the sixth elemetns on 
 				device=self.device
 			)
 			obj.params_ranger()

@@ -3,7 +3,7 @@ from math import floor, ceil
 from copy import deepcopy
 
 def voxel_carving(
-		mask_imgs, camera, bbox, voxel_size, #here the bbox is marginal bbox
+		mask_imgs, camera, bbox, voxel_size, #here the bbox is marginal bbox in implementation
 		device='cuda:0', smoothed=False):
 	
 	# camera
@@ -19,7 +19,7 @@ def voxel_carving(
 		return image.view(-1)[indices]
 
 	# parameters
-	w = floor(2 * bbox[3] / voxel_size + 0.5) # width of grid, bbox[3] is the width of the marginal bounding box
+	w = floor(2 * bbox[3] / voxel_size + 0.5) # width of grid, bbox[3] is half of the width of the marginal bounding box
 	h = floor(2 * bbox[4] / voxel_size + 0.5)
 	d = floor(2 * bbox[5] / voxel_size + 0.5)
 	grid_x = torch.linspace(
@@ -29,7 +29,7 @@ def voxel_carving(
 	grid_z = torch.linspace(
 		bbox[2] - bbox[5] + voxel_size * 0.5, bbox[2] + bbox[5] - voxel_size * 0.5, d)
 	x, y, z = torch.meshgrid(grid_x, grid_y, grid_z, indexing='ij')
-	pts = torch.stack([x.flatten(), y.flatten(), z.flatten(), torch.ones_like(z.flatten())]) # 4*w*h*d
+	pts = torch.stack([x.flatten(), y.flatten(), z.flatten(), torch.ones_like(z.flatten())])
 
 	# carving
 	filled = []
@@ -92,10 +92,11 @@ def voxel_carving(
 
 	# stack results
 	filled = torch.stack(filled)
-	filled = torch.sum(filled, dim=0).reshape(w, h, d)
+	filled = torch.sum(filled, dim=0).reshape(w, h, d) # raw voxel size
+	# In voxel_carving, the size of raw voxel is w*h*d, the marginal bbox is expanded with scaling factor 1/voxel_size
 
 	if smoothed:
-		occupancy = filled / len(projections)
+		occupancy = filled / len(projections) # this ensures that all voxel representations have a consistent resolution 
 	else:
 		occupancy = torch.zeros_like(filled)
 		occupancy[filled >= len(projections)] = 1 #tensor size e.g. 42*42*100, 125*125*21, the grid within the bbox

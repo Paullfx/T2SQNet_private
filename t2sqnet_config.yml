@@ -28,7 +28,7 @@ dummy_data_paths: [
 
   #dummy_data_paths: none
 
-voxel_model_path: pretrained/voxel/model_best_chamfer_metric.pkl
+voxel_model_path: pretrained/voxel/model_best_chamfer_metric.pkl # seems not used
 voxel_data_config_path: configs/voxelize_config.yml
 num_augs: 5
 device: cuda
