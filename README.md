@@ -29,9 +29,9 @@ Young Hun Kim*,
 - The file ./data_pre.py is for preparing the color images and camera poses as the input for the T2SQNet pipeline. In ./data_pre.py, firstly give the dataset_root (e.g. Path("/home/fuxiao/Projects/Orbbec/concept-graphs/conceptgraph/dataset/external") and the scene_id (experiment index like "tableware_1_13") that you want to analyse. Give the acoording camera extrinsics (note that the camera extrinsics should fit the image size accordingly). Secondly, because the pretrained T2SQNet takes seven images as input, you need to select the seven images and give their selected_indices (e.g. ["000000", "000005", "000017", "000062", "000073", "000088", "000098"])
 - The file ./my_code.py calls the functions of T2SQNet model and load the prtrained model weights from t2sqnet_config.yml. Running the my_code.py script will generate a folder with name "scene_id_default" in the folder ./intermediates. Various intermediate results can be found in this folder. Remember to rename it with the according scene_id such that it won't be covered by next experiment
 - ./visualize_CG_T2_fuxiao.py is for plotting CG pcd, T2 pcd, and camera pose. ./visualize_only_bbox_pc.py is for plotting the bbox and the pcd of the fitted superquadrics../visualize_voxel_from_objList_copy.py for plotting the visual hull in form of voxels.
-## Compare the visual hull voxel to the fitted superquadric point cloud
+## Compare the visual hull voxel to the fitted superquadric point cloud (Fuxiao)
 
-## Superquadric fitting with segmented point cloud from ConceptGraph pipeline
+## Superquadric fitting with segmented point cloud from ConceptGraph pipeline(Fuxiao)
 - For test purpose
 ## Preview
 <I><b>Sequential Decluttering (Left):</b> T<sup>2</sup>SQNet-based method succeeds in sequentially grasping the objects without re-recognition, while avoiding collisions with other objects and the environment. </I>
