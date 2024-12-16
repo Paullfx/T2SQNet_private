@@ -46,11 +46,11 @@ def get_urdfs_and_poses_dict(
 			pose, params=param, device='cpu'
 		)
 
-		# pose
+		# read pose from tableware.SE3
 		position = tableware.SE3[0:3, 3].detach().cpu().numpy()
 		orientation = matrices_to_quats(tableware.SE3[0:3, 0:3].detach().cpu().numpy())
 
-		# mesh
+		# generate mesh
 		mesh = tableware.get_mesh(transform=False)
 
 		# make temporary object file
@@ -65,7 +65,7 @@ def get_urdfs_and_poses_dict(
 		urdf_path = os.path.join(temp_path, urdf_name)		
 
 		# save mesh			
-		o3d.io.write_triangle_mesh(mesh_path, mesh)
+		o3d.io.write_triangle_mesh(mesh_path, mesh) #o3d function to write mesh into urdf file
 
 		# urdf content
 		urdf_contents = f"""
@@ -177,7 +177,7 @@ def process_file(
 			[workspace_origin[1] - 0.4, workspace_origin[1] + 0.4],
 			[workspace_origin[2], workspace_origin[2] + 0.3]
 		])
-		voxel_size = 0.005
+		voxel_size = 0.005 #smaller voxel_size ("resolution rate"), higher computation cost 
 		if camera_for_tsdf is None:
 			camera_for_tsdf = data["camera"]
 

@@ -17,7 +17,7 @@ python generate_tableware_pybullet.py \
 --test_num 3 \
 --num_cameras 36 \
 --sim_type table \
---reduce_ratio 2
+--reduce_ratio 2 #Hhm...
 
 # Render RGB images using Blender
 $BLENDER_BIN $BLENDER_PROJ_PATH --background \

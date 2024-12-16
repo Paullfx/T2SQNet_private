@@ -32,7 +32,9 @@ Young Hun Kim*,
 ## Compare the visual hull voxel to the fitted superquadric point cloud (Fuxiao)
 
 ## Superquadric fitting with segmented point cloud from ConceptGraph pipeline(Fuxiao)
-- For test purpose
+- Pointcloud sampling
+  - Conda activate ros_cg. One terminal for running ros publisher "ros2 run sai_orbbec sai_publisher". Modify the "scene_id" in ros_tableware.yaml to e.g. "tableware_4_9". Then open another terminal, cd ./conceptgraph/slam, run "python3 ros_rerun_sai_T2.py".
+  - Data processing: firstly run fuxiao_open3d_tableware.py in /home/fuxiao/Projects/Orbbec/concept-graphs/conceptgraph/scripts/fuxiao_PC/drafts/fuxiao_open3d_tableware_test.py. This will generate a .ply file in 'concept-graphs/conceptgraph/dataset/external/{exp_id}/exps/exp/default' for the specific tableware e.g. "cup". Remember to modify this specific object to read the tableware from the point cloud accordingly. Secondly run tableware_process.py to denoise, this will  generate a "{exp_id}_bowl_denoised.ply" file. After experimenting, the parameters for denoise are setted "voxel_down_pcd.remove_radius_outlier(nb_points=200, radius=0.2)". 
 ## Preview
 <I><b>Sequential Decluttering (Left):</b> T<sup>2</sup>SQNet-based method succeeds in sequentially grasping the objects without re-recognition, while avoiding collisions with other objects and the environment. </I>
 

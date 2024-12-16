@@ -78,7 +78,7 @@ class TSQPipeline():
 		
 	def load_voxel_infos(self, voxel_data_config_path):
 		voxel_data_config = OmegaConf.load(voxel_data_config_path)
-		self.voxel_size = voxel_data_config['voxel_size']
+		self.voxel_size = voxel_data_config['voxel_size'] #see voxel_data_config
 		self.max_bbox_size = voxel_data_config['max_bbox_size']
 		self.marginal_bbox_size = voxel_data_config['marginal_bbox_size']
 
@@ -426,10 +426,10 @@ class TSQPipeline():
 
 
 			# parameter prediction                                                                    
-			voxel_scale = torch.tensor(self.voxel_size[object_class]).unsqueeze(0).to(self.device)  
+			voxel_scale = torch.tensor(self.voxel_size[object_class]).unsqueeze(0).to(self.device)  # "voxel_scale" is a class-dependent name of "voxel_size"
 			
 			t = time.time()																			# voxel -> param
-			obj_info = self.param_predictors[object_idx](voxel.unsqueeze(0), voxel_scale).squeeze()# voxelhead with resnet3d as backbone and FCvec for last steps
+			obj_info = self.param_predictors[object_idx](voxel.unsqueeze(0), voxel_scale).squeeze()# voxelhead with resnet3d as backbone and FCvec as heads
 			# print(f'param_predictors elapsed time: {time.time() - t}')
 			pose = torch.eye(4).to(self.device)
 			pose[0:3, 3] = obj_info[0:3] + bbox[0:3]# translation term
