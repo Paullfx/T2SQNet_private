@@ -12,20 +12,21 @@ import matplotlib.pyplot as plt
 # load and visualize the segmented pcd from CG pipleine
 
 #tableware_ply_path = "./data_CG/tableware_4_16_bowl_denoised.ply" # a cup
+
 tableware_ply_path = "/home/fuxiao/Projects/Orbbec/concept-graphs/conceptgraph/dataset/external/tableware_5_12/exps/exp_default/tableware_5_12_bowl_denoised.ply"
 
 point_cloud = o3d.io.read_point_cloud(tableware_ply_path)
 print(point_cloud)
-#o3d.visualization.draw_geometries([point_cloud])
+o3d.visualization.draw_geometries([point_cloud])
 
 
 
 # normal estimation
 point_cloud.normals = o3d.utility.Vector3dVector(np.zeros((1, 3)))
 point_cloud.estimate_normals()
-#o3d.visualization.draw_geometries([point_cloud], point_show_normal=True)
+o3d.visualization.draw_geometries([point_cloud], point_show_normal=True)
 point_cloud.orient_normals_consistent_tangent_plane(100) # It is observed that the normal reorientation leads to a worse (even more incomplete) mesh representation
-#o3d.visualization.draw_geometries([point_cloud], point_show_normal=True)
+o3d.visualization.draw_geometries([point_cloud], point_show_normal=True)
 
 
 
@@ -42,7 +43,7 @@ mesh, densities = o3d.geometry.TriangleMesh.create_from_point_cloud_poisson(
     point_cloud, depth=9)  # depth can be adjustable here
 print(mesh)
 
-# o3d.visualization.draw_geometries([mesh])
+#o3d.visualization.draw_geometries([mesh])
 
 
 # use pseudo-color to visualize the density
@@ -61,7 +62,7 @@ o3d.visualization.draw_geometries([density_mesh])
 
 # remove low density vertices
 print('remove low density vertices')
-vertices_to_remove = densities < np.quantile(densities, 0.09) #set the density threshold #0.15 or even higher to crop the low density mesh of beer bottle
+vertices_to_remove = densities < np.quantile(densities, 0.11) #set the density threshold #0.15 or even higher to crop the low density mesh of beer bottle
 mesh.remove_vertices_by_mask(vertices_to_remove) # o3d.geometry.TriangleMesh.remove_vertices_by_mask requires boolean values with the number of vertices
 print(mesh)
 
@@ -81,5 +82,3 @@ filtered_density_mesh.vertex_colors = o3d.utility.Vector3dVector(filtered_densit
 
 # Visualize the filtered mesh with pseudo-color
 o3d.visualization.draw_geometries([filtered_density_mesh])
-
-#o3d.visualization.draw_geometries([mesh])

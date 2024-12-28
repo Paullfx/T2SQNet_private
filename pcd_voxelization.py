@@ -1,10 +1,11 @@
 import open3d as o3d
 import numpy as np
 import torch
+import os
 from math import floor, ceil
 from scipy.spatial import Delaunay
 
-
+# main reference: https://www.open3d.org/docs/latest/tutorial/Advanced/voxelization.html
 
 # The pcd voxelization consists of several parts
 # 1. Explanation of the script called "pcd_voxelization.py". The pcd input is segmented point cloud of one specific object (e.g. a beer bottle). Fisrt step is to create voxel grid of the object surface 
@@ -15,12 +16,14 @@ from scipy.spatial import Delaunay
 
 
 
-#tableware_ply_path = "/home/hamilton/Master_thesis/data_cup1/exp_default/pcd_exp_default.ply" 
+# tableware_ply_path = "/home/hamilton/Master_thesis/data_cup1/exp_default/pcd_exp_default.ply" 
 # tableware_ply_path = "/home/hamilton/Master_thesis/data_cup1/exp_default/tableware_4_6_bowl.ply" # a cup
 # tableware_ply_path = "/home/hamilton/Master_thesis/data_cup1/exp_default/tableware_4_6_bowl_denoised.ply" # a cup
-tableware_ply_path = "./data_CG/tableware_4_16_bowl_denoised.ply" # a cup
-#tableware_ply_path = "/home/hamilton/Master_thesis/data_cup1/exp_default_2/tableware_4_5_bowl_denoised.ply" # a plate
-
+# tableware_ply_path = "/home/hamilton/Master_thesis/data_cup1/exp_default_2/tableware_4_5_bowl_denoised.ply" # a plate
+# tableware_ply_path = "./data_CG/tableware_4_16_bowl_denoised.ply" # a cup
+scene_id = "tableware_5_12"
+tableware_ply_path = f"/home/fuxiao/Projects/Orbbec/concept-graphs/conceptgraph/dataset/external/{scene_id}/exps/exp_default/{scene_id}_bowl_denoised.ply"
+# tableware_ply_path = "/home/fuxiao/Projects/Orbbec/concept-graphs/conceptgraph/dataset/external/tableware_5_12/exps/exp_default/tableware_5_12_bowl_denoised.ply"
 
 
 point_cloud = o3d.io.read_point_cloud(tableware_ply_path)
@@ -29,18 +32,10 @@ print(point_cloud)
 o3d.visualization.draw_geometries([point_cloud], window_name="Original Point Cloud")
 
 
+# mesh = pcd2mesh(point_cloud) 
 
-# surface voxel grid
-print('voxelization')
-voxel_size = 0.004843219465611634  # use the predefined voxel size for specific tableware from voxelize_config.yml # Bowl: 0.004843219465611634 # Mug: 0.001832966443807953
-voxel_grid = o3d.geometry.VoxelGrid.create_from_point_cloud(point_cloud,
-                                                            voxel_size=voxel_size)
-o3d.visualization.draw_geometries([voxel_grid])
-
-
-
-
-# dense voxel grid
+output_filename = os.path.join("T2SQNet_private/data/voxelization_data", f"{scene_id}_carved_voxel.ply") # save to T2SQNet_private/data/voxelization_data/{scene_id}_carved_voxel.ply
+# camera_path = os.path.abspath("../../test_data/sphere.ply")
 
 
 
