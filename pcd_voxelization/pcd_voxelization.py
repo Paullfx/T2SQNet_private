@@ -5,6 +5,16 @@ import os
 from math import floor, ceil
 from scipy.spatial import Delaunay
 
+
+
+
+
+
+# ----------------------------------------
+# Section 0: Reference and explanation
+# ----------------------------------------
+
+
 # main reference: https://www.open3d.org/docs/latest/tutorial/Advanced/voxelization.html
 
 # The pcd voxelization consists of several parts
@@ -16,10 +26,15 @@ from scipy.spatial import Delaunay
 
 
 
+
+
+
+# ----------------------------------------
+# Section 1: Load the point cloud
+# ----------------------------------------
+
+
 # tableware_ply_path = "/home/hamilton/Master_thesis/data_cup1/exp_default/pcd_exp_default.ply" 
-# tableware_ply_path = "/home/hamilton/Master_thesis/data_cup1/exp_default/tableware_4_6_bowl.ply" # a cup
-# tableware_ply_path = "/home/hamilton/Master_thesis/data_cup1/exp_default/tableware_4_6_bowl_denoised.ply" # a cup
-# tableware_ply_path = "/home/hamilton/Master_thesis/data_cup1/exp_default_2/tableware_4_5_bowl_denoised.ply" # a plate
 # tableware_ply_path = "./data_CG/tableware_4_16_bowl_denoised.ply" # a cup
 scene_id = "tableware_5_12"
 tableware_ply_path = f"/home/fuxiao/Projects/Orbbec/concept-graphs/conceptgraph/dataset/external/{scene_id}/exps/exp_default/{scene_id}_bowl_denoised.ply"
@@ -31,11 +46,16 @@ print("Original point cloud:")
 print(point_cloud)
 o3d.visualization.draw_geometries([point_cloud], window_name="Original Point Cloud")
 
+# ----------------------------------------
+# Section 2: Voxelization and voxel carving
+# ----------------------------------------
 
-# mesh = pcd2mesh(point_cloud) 
-
+# mesh = pcd2mesh(point_cloud) # define a function pcd2mesh
 output_filename = os.path.join("T2SQNet_private/data/voxelization_data", f"{scene_id}_carved_voxel.ply") # save to T2SQNet_private/data/voxelization_data/{scene_id}_carved_voxel.ply
 # camera_path = os.path.abspath("../../test_data/sphere.ply")
+visualization = True
+cubic_size = 2.0
+voxel_resolution = 128.0
 
 
 
