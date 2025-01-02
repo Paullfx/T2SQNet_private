@@ -1,5 +1,6 @@
 import open3d as o3d
 import numpy as np
+import os
 
 # Reference: https://www.open3d.org/docs/latest/tutorial/Advanced/voxelization.html
 
@@ -31,7 +32,7 @@ def get_extrinsic(xyz):
     trans[:3, 3] = t
     return trans
 
-# preprocess the traingular mesh, centralize the vertices and scale the vertices
+
 def preprocess(model):
     min_bound = model.get_min_bound()
     max_bound = model.get_max_bound()
@@ -41,6 +42,18 @@ def preprocess(model):
     vertices -= center
     model.vertices = o3d.utility.Vector3dVector(vertices / scale)
     return model
+
+
+# def camera_sphere_preprocess(model):
+#     min_bound = model.get_min_bound()
+#     max_bound = model.get_max_bound()
+#     center = min_bound + (max_bound - min_bound) / 2.0
+#     scale = np.linalg.norm(max_bound - min_bound) / 2.0 # 0.5* space diagonal
+#     vertices = np.asarray(model.vertices) #verstices of the mesh
+#     vertices -= center
+#     vertices *= 3.0 # make the camera sphere several times larger than the object mesh
+#     model.vertices = o3d.utility.Vector3dVector(vertices / scale)
+#     return model
 
 # voxel carving method
 def voxel_carving(mesh,
@@ -64,7 +77,7 @@ def voxel_carving(mesh,
         origin=[-cubic_size / 2.0, -cubic_size / 2.0, -cubic_size / 2.0],
         color=[1.0, 0.7, 0.0])
 
-    # rescale geometry
+    # rescale geometry and align the object (e.g. handleless cup) with the camera sphere
     camera_sphere = preprocess(camera_sphere)
     mesh = preprocess(mesh)
 
@@ -76,7 +89,6 @@ def voxel_carving(mesh,
     ctr = vis.get_view_control()
     param = ctr.convert_to_pinhole_camera_parameters()
 
-
     pcd_agg = o3d.geometry.PointCloud()
     centers_pts = np.zeros((len(camera_sphere.vertices), 3))
     for cid, xyz in enumerate(camera_sphere.vertices): # enumerate through all the vertices of the camera sphere to get camera poses
@@ -85,7 +97,11 @@ def voxel_carving(mesh,
         param.extrinsic = trans
         c = np.linalg.inv(trans).dot(np.asarray([0, 0, 0, 1]).transpose())
         centers_pts[cid, :] = c[:3] # cid very likely index from 0 to . raw cid, and all columns. c[:3] include the first three elements of 4-dim c
-        ctr.convert_from_pinhole_camera_parameters(param)
+        ctr.convert_from_pinhole_camera_parameters(param, allow_arbitrary=True) # 
+
+
+
+
 
         # capture depth image and make a point cloud
         vis.poll_events()
@@ -102,8 +118,12 @@ def voxel_carving(mesh,
             voxel_carving.carve_depth_map(o3d.geometry.Image(depth), param)
         else:
             voxel_carving.carve_silhouette(o3d.geometry.Image(depth), param)
-        print("Carve view %03d/%03d" % (cid + 1, len(camera_sphere.vertices)))
+        #print("Carve view %03d/%03d" % (cid + 1, len(camera_sphere.vertices)))
     vis.destroy_window()
+
+    print(f"Saving voxel_carving to {output_filename}")
+    o3d.io.write_voxel_grid(output_filename, voxel_carving)
+
 
     # add voxel grid survace
     print('Surface voxel grid from %s' % surface_method)
@@ -124,3 +144,37 @@ def voxel_carving(mesh,
     voxel_carving_surface = voxel_surface + voxel_carving
 
     return voxel_carving_surface, voxel_carving, voxel_surface
+
+### load the data and call the function ###
+
+scene_id = "tableware_5_12"
+
+output_folder = "./data_cubic_mesh"
+output_file_path = os.path.join(output_folder, f"{scene_id}_cubic_mesh.ply")
+mesh = o3d.io.read_triangle_mesh(output_file_path)
+o3d.visualization.draw_geometries([mesh])
+
+output_folder = "./voxel_carving_results"
+os.makedirs(output_folder, exist_ok=True)
+output_filename = os.path.join(output_folder,f"{scene_id}_voxel_carving.ply")
+
+camera_path = os.path.join(".", "sphere.ply")
+visualization = True
+cubic_size = 2.0
+voxel_resolution = 128.0
+
+voxel_grid, voxel_carving, voxel_surface = voxel_carving(
+    mesh, output_filename, camera_path, cubic_size, voxel_resolution)
+
+### visualize the results ###
+print("surface voxels")
+print(voxel_surface)
+o3d.visualization.draw_geometries([voxel_surface])
+
+print("carved voxels")
+print(voxel_carving)
+o3d.visualization.draw_geometries([voxel_carving])
+
+print("combined voxels (carved + surface)")
+print(voxel_grid)
+o3d.visualization.draw_geometries([voxel_grid])

@@ -17,10 +17,10 @@ def generate_sphere_mesh(num_points):
     # Combine coordinates into a (num_points, 3) array
     points = np.vstack((x, y, z)).T
 
-    # Create a triangle mesh with vertices (no faces for now)
+    # Create a triangle mesh with vertices 
     sphere_mesh = o3d.geometry.TriangleMesh()
     sphere_mesh.vertices = o3d.utility.Vector3dVector(points)
-    sphere_mesh.triangles = o3d.utility.Vector3iVector([])  # No triangles
+    #sphere_mesh.triangles = o3d.utility.Vector3iVector([])  # No triangles
     return sphere_mesh
 
 def save_ply_file(mesh, filename):
