@@ -71,7 +71,7 @@ def visualize_voxels_with_open3d(voxel_list, exp_index):
 
 
 # Define the experiment index
-exp_index = "scene_id_default"  # Example experiment index
+exp_index = "blender_table_0_3"  # Example experiment index e.g. "blender_table_0_3" "scene_id_default"
 file_path = f'./intermediates/{exp_index}/object_list/object_list.pkl'
 
 # Load the object list

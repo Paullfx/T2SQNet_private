@@ -90,7 +90,7 @@ def visualize_voxels_with_open3d_single(voxel_dict, exp_index):
         print(f"Invalid voxel data, type: {type(voxel_dict)}")
 
 # Define the experiment index
-exp_index = "scene_id_default"  # Example experiment index
+exp_index = "blender_table_0_3"  # Example experiment index # "blender_table_0_3"
 file_path = f'./intermediates/{exp_index}/object_list/object_list.pkl'
 
 # Load the object list

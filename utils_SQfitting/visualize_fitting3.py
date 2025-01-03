@@ -22,10 +22,10 @@ def visualize_voxels_with_open3d_single(voxel_dict):
         voxel_dict (dict): A dictionary containing:
                           - voxel_hull['voxel']: Tensor data (2*w*h*d).
                           - voxel_hull['voxel_scale']: Scale or metadata for the voxels.
-        exp_index (str): The experiment index for labeling voxel data sources.
+        exp_index
     """
     # Define paths
-    #exp_index = "scene_id_default"# "tableware_3_9" #scene_id_default
+    # exp_index = "scene_id_default"# "tableware_3_9" #scene_id_default
     input_dir = f'./intermediates/{exp_index}/bboxes_cls'
     results_dir = f'./intermediates/{exp_index}/results'
 
@@ -177,7 +177,7 @@ def visualize_voxels_with_open3d_single(voxel_dict):
         print(f"Invalid voxel data, type: {type(voxel_dict)}")
 
 # Define the experiment index
-exp_index = "scene_id_default"  # scene_id_default
+exp_index = "blender_table_0_3"  # scene_id_default # "blender_table_0_3"
 file_path = f'./intermediates/{exp_index}/object_list/object_list.pkl'
 
 # Load the object list

@@ -6,6 +6,7 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from matplotlib.cm import get_cmap
 import warnings
 
+
 # Import custom functions
 from data_pre import load_cam_pos
 
@@ -41,7 +42,8 @@ def draw_3d_bbox(ax, bbox, label=None, color='blue'):
 
 
 # Define paths
-exp_index = "scene_id_default"# "tableware_3_9" #scene_id_default
+# exp_index = "scene_id_default"# "tableware_3_9" #scene_id_default #blender_table_0_3
+exp_index = "blender_table_0_3"
 input_dir = f'./intermediates/{exp_index}/bboxes_cls'
 results_dir = f'./intermediates/{exp_index}/results'
 
