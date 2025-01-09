@@ -502,6 +502,7 @@ class ControlSimulationEnv:
 			os.remove(mesh_path)
   
 		# create object
+
 		body_id = p.createMultiBody(
 			0.05, 
 			collision_id, 
@@ -509,6 +510,7 @@ class ControlSimulationEnv:
 			position, 
 			orientation
 		)
+
 		p.changeDynamics(
 			body_id, 
 			-1,
@@ -517,11 +519,13 @@ class ControlSimulationEnv:
 			lateralFriction=0.4,
 			mass=0.1
 		)
+
 		p.changeVisualShape(
 			body_id, 
 			-1, 
 			rgbaColor=object_color
 		)
+		
 		self.object_ids.append(body_id)
 
 		# keep object information

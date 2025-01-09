@@ -256,7 +256,7 @@ class Controller:
 			f'''
 			*************************************************
 			***************** CLEAR CLUTTER *****************
-			****************** ITERATION {self.iter} ******************
+			****************** ITERATION  *******************
 			*************************************************
 			'''
 			)
@@ -785,6 +785,7 @@ class Controller:
 		if self.recog_type == 't2sqnet_gt':
 			if self.data_type == 'tableware':
 				return self.env.object_infos
+				# here store the self.env.objct_infos.get_meshes() to the intermediate folder and name the file as 'ground_truth.pkl'
 			elif self.data_type == 'transpose':
 				raise NotImplementedError
 
