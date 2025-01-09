@@ -8,7 +8,9 @@ from matplotlib.cm import get_cmap
 import os
 
 def grid_to_bbox_coordinates(i, j, k, bbox, voxel_size):
-
+    """
+    coordinates tranfomration
+    """
     x_actual = bbox[0] - bbox[3] + i * voxel_size + 0.5 * voxel_size
     y_actual = bbox[1] - bbox[4] + j * voxel_size + 0.5 * voxel_size
     z_actual = bbox[2] - bbox[5] + k * voxel_size + 0.5 * voxel_size
@@ -17,12 +19,13 @@ def grid_to_bbox_coordinates(i, j, k, bbox, voxel_size):
 def visualize_voxels_with_open3d_single(voxel_dict):
     """
     Visualize a single voxel dictionary using Open3D, displaying both parts of the voxel data in separate windows.
+    
 
     Parameters:
         voxel_dict (dict): A dictionary containing:
                           - voxel_hull['voxel']: Tensor data (2*w*h*d).
                           - voxel_hull['voxel_scale']: Scale or metadata for the voxels.
-        exp_index
+        {exp_index} is part of the file name to load 
     """
     # Define paths
     # exp_index = "scene_id_default"# "tableware_3_9" #scene_id_default
