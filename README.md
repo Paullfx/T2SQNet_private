@@ -22,7 +22,55 @@ Young Hun Kim*,
 ## Running on LSY working staton (Fuxiao)
 - In LSY working station, conda venv T2, branch fuxiao-desktop for stage 1.1 (Running the pretrained T2 pipeline), branch fuxiao-fitting for stage 1.2  (Run the superquadric-fitting module fo T2 on the segmented point cloud from ConceptGraph pipeline)
 ## How to analyse the intermediate results of T2SQNet in simulation (Fuxiao)
-- Run the control.py in debug mode. Add config file. Add a breakpoint before the control part of the section (e.g. line 289 in controller.py)，more details will be added...
+- Run the [control.py](http://control.py/) in debug mode. Add config file. Add a breakpoint before the control part of the section (e.g. line 289 in [controller.py](http://controller.py/))，more details will be added...
+    - Detail of running debug mode. Modify the clear_clutter.yml or target_retrieval.yml by e.g. choosing the table scene or shelf scene and then run this script in debug mode (add args in debugger json file)
+    
+    ```shell
+        python control.py --config configs/control/{clear_clutter}.yml
+    ```
+    
+    - add breakpoint, run
+- cd, run visualization command
+    
+    ```python
+    # cd T2SQNet_private # the repo folder
+    python -m utils_SQfitting.visualize_only_bbox_pc
+    ```
+    
+    - Tableware parameters should be seen in the terminal
+    
+    ```python
+    Results loaded successfully.
+    Number of objects detected: 4
+    0       Object Name: BeerBottle 
+            Object Params: tensor([ 0.0445,  0.1759,  0.0203,  0.0141,  0.0717, -0.1738], device='cuda:0')
+    1       Object Name: BeerBottle 
+            Object Params: tensor([ 0.0355,  0.1643,  0.0111,  0.0149,  0.0751, -0.1142], device='cuda:0')
+    2       Object Name: BeerBottle 
+            Object Params: tensor([ 0.0397,  0.1608,  0.0373,  0.0150,  0.0781, -0.0403], device='cuda:0')
+    3       Object Name: BeerBottle 
+            Object Params: tensor([ 0.0495,  0.1287,  0.0356,  0.0158,  0.0882, -0.1479], device='cuda:0')
+    <class 'tablewarenet.tableware.BeerBottle'>
+    <class 'tablewarenet.tableware.BeerBottle'>
+    <class 'tablewarenet.tableware.BeerBottle'>
+    <class 'tablewarenet.tableware.BeerBottle'>
+    ```
+    
+    - visualization looks like this
+    <div class="imgCollage">
+      <span style="width: 50%">
+          <img src="./assets/LSY_materials/bbox_reconstructedTableware.png"
+              alt="sequential decluttering"
+              width="575"/>
+      </span>
+      <!-- <span style="width: 50%">
+          <img src="./assets/tr.gif"
+              alt="target retrieval"
+              width="375"/>
+      </span> -->
+    </div>
+    
+    - The figure on the left side shows the reconstructed pointcloud of tablewares object using superquadric fitting parameters and the “marginal bbox”
 - Analyse and visualize the intermediate/scene_id_default, more details will be added...
 ## How to analyse the intermediate results of T2SQNet with real data (Fuxiao)
 - The file ./data_pre_cg.py is for the data-processing of conceptgraph data. In ./data_pre_cg.py, give the source_path of .pkl.gz (e.g. '/home/fuxiao/Projects/Orbbec/concept-graphs/conceptgraph/dataset/external/tableware_2_2/exps/exp_default/pcd_exp_default.pkl.gz'). This stores the segmented pointcloud outputted by Conceptgraph pipeline

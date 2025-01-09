@@ -42,8 +42,8 @@ def draw_3d_bbox(ax, bbox, label=None, color='blue'):
 
 
 # Define paths
-# exp_index = "scene_id_default"# "tableware_3_9" #scene_id_default #blender_table_0_3
-exp_index = "blender_table_0_3"
+# exp_index = "scene_id_default"# "tableware_3_9" #"scene_id_default" #blender_table_0_3
+exp_index = "scene_id_default"
 input_dir = f'./intermediates/{exp_index}/bboxes_cls'
 results_dir = f'./intermediates/{exp_index}/results'
 
@@ -81,7 +81,7 @@ if results is None or not results:
     print("No results to process. Exiting.")
     exit()
 
-sq_results = results[3][0]  # the list of tablewares
+sq_results = results[3][0]  # the list of reconstructed pointcloud of tablewares object using superquadric fitting parameters
 print("Number of objects detected:", len(sq_results))
 for idx, obj in enumerate(sq_results):
     print(idx, "\tObject Name:", obj.name, "\n\tObject Params:", obj.params)
@@ -112,7 +112,8 @@ for i, obj in enumerate(points):
     x, y, z = obj[:, 0], obj[:, 1], obj[:, 2]
     ax.scatter(x, y, z, color=colors[i], marker='.', label=f"T2SQNet: {class_names[i]}", s=5)
 
-# Plot bounding boxes
+# Plot bounding boxes using precisely the same coordinate transform in the original T2SQNet code file 
+# # coordinate transformation from the DETR3D network output into the voxel hull. is directly taken from the pipeline.py file in the T2SQNet code
 for bbox, label in zip(bboxes, class_names):
     if hasattr(bbox, 'cpu'):
         bbox = bbox.cpu().numpy()

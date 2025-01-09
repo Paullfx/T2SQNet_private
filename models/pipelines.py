@@ -342,7 +342,7 @@ class TSQPipeline():
 				mask_imgs.unsqueeze(0).unsqueeze(2).repeat(1, 1, 3, 1, 1), #possibly mask grayscale to RGB
 				camera_projection_matrices.unsqueeze(0),
 				img_size.unsqueeze(0)
-			)# bbox_predictor is the DETR3D, fuxiao still stays in high level and do not dig deep into the struture of DETR3D.
+			)# bbox_predictor is the DETR3D
 			bboxes = bounding_box_list[-1].squeeze()
 			confs = conf_list[-1].squeeze()
 		valid_idxs = torch.arange(self.query_num).to(self.device)[confs > conf_thld]
@@ -360,7 +360,8 @@ class TSQPipeline():
 		voxel_size = self.voxel_size[object_class] # passed in from voxelize_config.yml, voxel_size is class-dependent
 		max_bbox_size = self.max_bbox_size[object_class] # passed in from voxelize_config.yml, max_bbox_size is class-dependent
 		marginal_bbox_size = self.marginal_bbox_size[object_class] # passed in from voxelize_config.yml, marginal_bbox_size is class-dependent
-		bbox = bbox.detach().cpu().numpy() # in the implementation of stage_1_2, "bbox" is precisely visualized, which is obvioudly smaller than the superquadric pcd of the according tablewares
+		bbox = bbox.detach().cpu().numpy() 
+		# in the implementation of stage_1_2, "bbox" is precisely visualized, which is obviously smaller than the superquadric pcd of the according tablewares
 			
 		# bounding box
 		max_bbox = np.concatenate(
@@ -369,14 +370,14 @@ class TSQPipeline():
 				np.array([bbox[2] - bbox[5] + max_bbox_size[2]]),
 				max_bbox_size), 
 			axis=0
-		)# y,z,(x-0.5*d)+(x_max-d), w_max, h_max,d_max
+		)# ( x , y , z-d+d_max , w_max , h_max, d_max )
 		marginal_bbox = np.concatenate(
 			(
 				bbox[0:2], 
 				np.array([bbox[2] - bbox[5] + marginal_bbox_size[2]]),
 				marginal_bbox_size), 
 			axis=0
-		)# y,z,(x_marg)
+		)# ( x , y , z-d+d_marginal , w_marg , h_marg, d_marg )
 
 		# voxel carving
 		raw_voxel = voxel_carving(
