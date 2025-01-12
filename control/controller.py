@@ -784,10 +784,18 @@ class Controller:
 		# ground truth
 		if self.recog_type == 't2sqnet_gt':
 			if self.data_type == 'tableware':
+			# save the ground truth (if exists) in './intermediates/scene_id_default/ground_truth', 
+				output_dir_gt = './intermediates/scene_id_default/ground_truth'
+				if not os.path.exists(output_dir_gt):
+					os.makedirs(output_dir_gt)
+				with open(os.path.join(output_dir_gt, 'gt.pkl'), 'wb') as f:
+					pickle.dump(self.env.object_infos, f)
+				print("ground truth saved to output_dir_gt")
 				return self.env.object_infos
-				# here store the self.env.objct_infos.get_meshes() to the intermediate folder and name the file as 'ground_truth.pkl'
+			# here store the self.env.objct_infos.get_meshes() to the intermediate folder and name the file as 'ground_truth.pkl'
 			elif self.data_type == 'transpose':
 				raise NotImplementedError
+
 
 		# t2sqnet from rgb
 		elif self.recog_type == 't2sqnet_rgb':
@@ -820,12 +828,13 @@ class Controller:
 				output_all=True
 			)
 
-			#save the results in './intermediates/scene_id_default/results', results is 4-dim Tuples
+			# save the inference results (if exists) in './intermediates/scene_id_default/results', results is 4-dim Tuples
 			output_dir_results = './intermediates/scene_id_default/results'
 			if not os.path.exists(output_dir_results):
 				os.makedirs(output_dir_results)
 			with open(os.path.join(output_dir_results, 'results.pkl'), 'wb') as f:
 				pickle.dump(results, f)
+			print("results saved to output_dir_results")
 
 
 

@@ -156,6 +156,7 @@ class TSQPipeline():
 			camera_intr = camera_params["camera_intr"]
 			np.save(os.path.join(output_dir, 'camera_pose.npy'), camera_pose)
 			np.save(os.path.join(output_dir, 'camera_intr.npy'), camera_intr)
+			print(f"camera poses and intrinsics saved to {output_dir}")
 
 			# get mask images
 			if not from_mask_imgs:
@@ -176,7 +177,7 @@ class TSQPipeline():
 				pickle.dump(bboxes, f)
 			with open(os.path.join(output_dir, 'cls.pkl'), 'wb') as f:
 				pickle.dump(cls, f)
-
+			print(f"bboxes and cls saved to {output_dir}")
 
 			# infer objects
 			t = time.time()
@@ -290,6 +291,7 @@ class TSQPipeline():
 			img_png = img.permute(1, 2, 0).detach().cpu().numpy().astype(np.uint8)
 			img_png = Image.fromarray(img_png)# save png imgs in the T2SQNet/intermediates/scene_id/imgs_inputs
 			img_png.save(os.path.join(output_dir, f'{i}.png'))
+			print(f"img {i} saved to {output_dir}")
 
 
 
@@ -321,6 +323,7 @@ class TSQPipeline():
 		for i, mask in enumerate(mask_jitt):
 			mask_png = Image.fromarray((mask*255).detach().cpu().numpy().astype(np.uint8))
 			mask_png.save(os.path.join(output_dir, f'{i}.png'))
+			print(f"mask {i} saved to {output_dir}")
 		return mask_jitt
 	
 	def mask2bbox(self, mask_imgs, camera_projection_matrices, img_size, conf_thld):
