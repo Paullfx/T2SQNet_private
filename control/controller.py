@@ -880,6 +880,17 @@ class Controller:
 			np.save(
 				os.path.join(self.save_folder, str(self.iter), 'bbox_info'),
 				bbox_info)
+			
+			# save the bbox in './intermediates/scene_id_default/bbox_info'
+			output_dir_bbox_info = './intermediates/scene_id_default/bbox_info'
+			if not os.path.exists(output_dir_bbox_info):
+				os.makedirs(output_dir_bbox_info)
+			with open(os.path.join(output_dir_bbox_info, 'bbox_info.pkl'), 'wb') as f:
+				pickle.dump(bbox_info, f)
+			print("bbox info saved to ./intermediates/scene_id_default/bbox_info")
+			
+
+
 			# save mask images
 			if not self.background_sam:
 				mask_img_list = results[-4]

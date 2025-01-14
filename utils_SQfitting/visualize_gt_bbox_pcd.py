@@ -48,12 +48,26 @@ input_dir = f'./intermediates/{exp_index}/bboxes_cls'
 results_dir = f'./intermediates/{exp_index}/results'
 gt_dir = f'./intermediates/{exp_index}/ground_truth'
 inferred_object_list_dir = f'./intermediates/scene_id_default/inferred_obj_list'
+bbox_info_dir = f'./intermediates/scene_id_default/bbox_info'
 
 bboxes_path = os.path.join(input_dir, 'bboxes.pkl')
 cls_path = os.path.join(input_dir, 'cls.pkl')
 results_path = os.path.join(results_dir, 'results.pkl')
 gt_path = os.path.join(gt_dir, 'gt.pkl')
 inferred_object_list_path = os.path.join(inferred_object_list_dir, 'inferred.pkl')
+bbox_info_path = os.path.join(bbox_info_dir, 'bbox_info.pkl')
+
+# Load bbox_info
+try:
+    with open(bbox_info_path, 'rb') as f:
+        bbox_info = pickle.load(f)
+    print("Bounding box info loaded successfully.")
+except FileNotFoundError:
+    print(f"Error: File not found at {bbox_info_path}. Please check the path and try again.")
+    exit()
+
+bboxes = bbox_info['bboxes']
+class_names = bbox_info['objects_class']
 
 # Load inferred object list
 try:
@@ -73,21 +87,21 @@ except FileNotFoundError:
     print(f"Error: File not found at {results_path}. Please check the path and try again.")
     results = None
 
-# Load class names
-class_names = []
-if os.path.exists(cls_path):
-    with open(cls_path, 'rb') as f:
-        class_names = pickle.load(f)
-else:
-    print(f"Error: Class file not found at {cls_path}.")
+# # Load class names
+# class_names = []
+# if os.path.exists(cls_path):
+#     with open(cls_path, 'rb') as f:
+#         class_names = pickle.load(f)
+# else:
+#     print(f"Error: Class file not found at {cls_path}.")
 
-# Load bounding boxes
-bboxes = []
-if os.path.exists(bboxes_path):
-    with open(bboxes_path, 'rb') as f:
-        bboxes = pickle.load(f)
-else:
-    print(f"Error: Bounding box file not found at {bboxes_path}.")
+# # Load bounding boxes
+# bboxes = []
+# if os.path.exists(bboxes_path):
+#     with open(bboxes_path, 'rb') as f:
+#         bboxes = pickle.load(f)
+# else:
+#     print(f"Error: Bounding box file not found at {bboxes_path}.")
 
 # Validate results data
 if results is None or not results:
@@ -176,33 +190,39 @@ for i, pos_gt in enumerate(position_gt):
 # Plot bounding boxes using precisely the same coordinate transform in the original T2SQNet code file 
 # # coordinate transformation from the DETR3D network output into the voxel hull. is directly taken from the pipeline.py file in the T2SQNet code
 
-# for bbox, label in zip(bboxes, class_names):
+for bbox, label in zip(bboxes, class_names):
+    if hasattr(bbox, 'cpu'):
+        bbox = bbox.cpu().numpy()
+    draw_3d_bbox(ax, bbox, label=label, color='blue') # bbox is the true bbox (output from DETR3D), marginal bbox, maximal bbox
+
+    max_bbox_size = np.array([0.06000329943137184, 0.06001342450793149, 0.17886416966013752]) # copy paste the max_bbox_size of the according classes from voxelize_config.yml
+    # here as the most simple example, there are 4 beer bottles
+    max_bbox = np.concatenate(
+        (
+            bbox[0:2], 
+            np.array([bbox[2] - bbox[5] + max_bbox_size[2]]),  
+            max_bbox_size 
+        ),
+        axis=0
+    )
+    draw_3d_bbox(ax, max_bbox, label="Max BBox", color='red')
+
+    marginal_bbox_size = np.array([0.0750041242892148, 0.07501678063491438, 0.17886416966013752])
+    marginal_bbox = np.concatenate(
+        (
+            bbox[0:2], 
+            np.array([bbox[2] - bbox[5] + marginal_bbox_size[2]]),
+            marginal_bbox_size
+        ), 
+        axis=0
+    )
+    draw_3d_bbox(ax, marginal_bbox, label="Marginal BBox", color='green')
+
+# for i, bbox in enumerate(bboxes):
 #     if hasattr(bbox, 'cpu'):
 #         bbox = bbox.cpu().numpy()
-#     #draw_3d_bbox(ax, bbox, label=label, color='blue') # bbox is the true bbox (output from DETR3D), marginal bbox, maximal bbox
+#     draw_3d_bbox(ax, bbox, label=f"BBox: {class_names[i]}", color='green')
 
-#     max_bbox_size = np.array([0.06000329943137184, 0.06001342450793149, 0.17886416966013752]) # copy paste the max_bbox_size of the according classes from voxelize_config.yml
-#     # here as the most simple example, there are 4 beer bottles
-#     max_bbox = np.concatenate(
-#         (
-#             bbox[0:2], 
-#             np.array([bbox[2] - bbox[5] + max_bbox_size[2]]),  
-#             max_bbox_size 
-#         ),
-#         axis=0
-#     )
-#     #draw_3d_bbox(ax, max_bbox, label="Max BBox", color='red')
-
-#     marginal_bbox_size = np.array([0.0750041242892148, 0.07501678063491438, 0.17886416966013752])
-#     marginal_bbox = np.concatenate(
-#         (
-#             bbox[0:2], 
-#             np.array([bbox[2] - bbox[5] + marginal_bbox_size[2]]),
-#             marginal_bbox_size
-#         ), 
-#         axis=0
-#     )
-#     draw_3d_bbox(ax, marginal_bbox, label="Marginal BBox", color='green')
 
 
 
