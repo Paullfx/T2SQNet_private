@@ -47,11 +47,22 @@ exp_index = "scene_id_default"
 input_dir = f'./intermediates/{exp_index}/bboxes_cls'
 results_dir = f'./intermediates/{exp_index}/results'
 gt_dir = f'./intermediates/{exp_index}/ground_truth'
+inferred_object_list_dir = f'./intermediates/scene_id_default/inferred_obj_list'
 
 bboxes_path = os.path.join(input_dir, 'bboxes.pkl')
 cls_path = os.path.join(input_dir, 'cls.pkl')
 results_path = os.path.join(results_dir, 'results.pkl')
 gt_path = os.path.join(gt_dir, 'gt.pkl')
+inferred_object_list_path = os.path.join(inferred_object_list_dir, 'inferred.pkl')
+
+# Load inferred object list
+try:
+    with open(inferred_object_list_path, 'rb') as f:
+        inferred = pickle.load(f)
+    print("Inferred object list loaded successfully.")
+except FileNotFoundError:
+    print(f"Error: File not found at {inferred_object_list_path}. Please check the path and try again.")
+    inferred = None
 
 # Load results
 try:
@@ -83,16 +94,22 @@ if results is None or not results:
     print("No results to process. Exiting.")
     exit()
 
-sq_results = results[3][0]  # the list of reconstructed tablewares object using superquadric fitting parameters
+positions = []
+
+# sq_results = results[3][0]  # the list of reconstructed tablewares object using superquadric fitting parameters
+sq_results = inferred
+
 print("Number of objects detected:", len(sq_results))
 for idx, obj in enumerate(sq_results):
     print(idx, "\tObject Name:", obj.name, "\n\tObject Params:", obj.params)
+    positions.append(obj.SE3[:3, 3].cpu().numpy())
 
 # Generate point clouds
 number_of_points = 1000
 points = []
 for obj in sq_results:
     points.append(obj.get_point_cloud(number_of_points=number_of_points))  # Use the get_point_cloud function
+    
     print(type(obj))
 
 
@@ -108,10 +125,11 @@ except FileNotFoundError:
     results = None
 
 # load individual object
-#sq_gt = gt[0]  # the list of gt tablewares object
+position_gt = []
 print("Number of objects detected:", len(gt))
 for idx, obj in enumerate(gt):
     print(idx, "\tObject Name:", obj.name, "\n\tObject Params:", obj.params)
+    position_gt.append(obj.SE3[:3,3].cpu().numpy())
 
 # get_point_cloud from gt tableware
 number_of_points = 1000
@@ -141,41 +159,50 @@ for i, obj in enumerate(points):
     x, y, z = obj[:, 0], obj[:, 1], obj[:, 2]
     ax.scatter(x, y, z, color=colors[i], marker='.', label=f"reconstructed T2SQNet: {class_names[i]}", s=5)
 
+# # Plot reconstructed object position   
+for i, pos in enumerate(positions):
+    ax.scatter(pos[0], pos[1], pos[2], color='red', marker='o', s=100, label=f"Reconstructed SE3: {class_names[i]}" if i == 0 else None)
+
 # Plot gt point cloud data
 for i, obj in enumerate(points_gt):
     x, y, z = obj[:, 0], obj[:, 1], obj[:, 2]
     ax.scatter(x, y, z, color=colors[i], marker='x', label=f"Ground truth T2SQNet: {class_names[i]}", s=5)
 
+# # Plot ground truth object position
+for i, pos_gt in enumerate(position_gt):
+    ax.scatter(pos_gt[0], pos_gt[1], pos_gt[2], color='blue', marker='^', s=100, label=f"GT SE3: {class_names[i]}" if i == 0 else None)
+
 
 # Plot bounding boxes using precisely the same coordinate transform in the original T2SQNet code file 
 # # coordinate transformation from the DETR3D network output into the voxel hull. is directly taken from the pipeline.py file in the T2SQNet code
-for bbox, label in zip(bboxes, class_names):
-    if hasattr(bbox, 'cpu'):
-        bbox = bbox.cpu().numpy()
-    #draw_3d_bbox(ax, bbox, label=label, color='blue') # bbox is the true bbox (output from DETR3D), marginal bbox, maximal bbox
 
-    max_bbox_size = np.array([0.06000329943137184, 0.06001342450793149, 0.17886416966013752]) # copy paste the max_bbox_size of the according classes from voxelize_config.yml
-    # here as the most simple example, there are 4 beer bottles
-    max_bbox = np.concatenate(
-        (
-            bbox[0:2], 
-            np.array([bbox[2] - bbox[5] + max_bbox_size[2]]),  
-            max_bbox_size 
-        ),
-        axis=0
-    )
-    #draw_3d_bbox(ax, max_bbox, label="Max BBox", color='red')
+# for bbox, label in zip(bboxes, class_names):
+#     if hasattr(bbox, 'cpu'):
+#         bbox = bbox.cpu().numpy()
+#     #draw_3d_bbox(ax, bbox, label=label, color='blue') # bbox is the true bbox (output from DETR3D), marginal bbox, maximal bbox
 
-    marginal_bbox_size = np.array([0.0750041242892148, 0.07501678063491438, 0.17886416966013752])
-    marginal_bbox = np.concatenate(
-        (
-            bbox[0:2], 
-            np.array([bbox[2] - bbox[5] + marginal_bbox_size[2]]),
-            marginal_bbox_size
-        ), 
-        axis=0
-    )
-    draw_3d_bbox(ax, marginal_bbox, label="Marginal BBox", color='green')
+#     max_bbox_size = np.array([0.06000329943137184, 0.06001342450793149, 0.17886416966013752]) # copy paste the max_bbox_size of the according classes from voxelize_config.yml
+#     # here as the most simple example, there are 4 beer bottles
+#     max_bbox = np.concatenate(
+#         (
+#             bbox[0:2], 
+#             np.array([bbox[2] - bbox[5] + max_bbox_size[2]]),  
+#             max_bbox_size 
+#         ),
+#         axis=0
+#     )
+#     #draw_3d_bbox(ax, max_bbox, label="Max BBox", color='red')
+
+#     marginal_bbox_size = np.array([0.0750041242892148, 0.07501678063491438, 0.17886416966013752])
+#     marginal_bbox = np.concatenate(
+#         (
+#             bbox[0:2], 
+#             np.array([bbox[2] - bbox[5] + marginal_bbox_size[2]]),
+#             marginal_bbox_size
+#         ), 
+#         axis=0
+#     )
+#     draw_3d_bbox(ax, marginal_bbox, label="Marginal BBox", color='green')
 
 
 
