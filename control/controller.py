@@ -800,6 +800,15 @@ class Controller:
 		# t2sqnet from rgb
 		elif self.recog_type == 't2sqnet_rgb':
 			
+			# save the ground truth (if exists) in './intermediates/scene_id_default/ground_truth', 
+			output_dir_gt = './intermediates/scene_id_default/ground_truth'
+			if not os.path.exists(output_dir_gt):
+				os.makedirs(output_dir_gt)
+			with open(os.path.join(output_dir_gt, 'gt.pkl'), 'wb') as f:
+				pickle.dump(self.env.object_infos, f)
+			print("ground truth saved to output_dir_gt")
+
+
 			# observation
 			img_list, camera_params = self.observation()
 			camera_params = self.process_camera_parameters(camera_params)
@@ -838,17 +847,26 @@ class Controller:
 
 
 
-
+			### The original data saving block ###
 			# object info
 			obj_list = results[-1][0]
 			for obj in obj_list:
-				obj.SE3[:3, 3] += torch.tensor(self.env.workspace_center).to(obj.SE3)
+				obj.SE3[:3, 3] += torch.tensor(self.env.workspace_center).to(obj.SE3) # coord transform
 				obj.construct()
 				obj.send_to_device('cpu')
 			obj_info = self.get_objects_info(obj_list)
 			np.save(
 				os.path.join(self.save_folder, str(self.iter), 'obj_info'),
 				obj_info)
+			
+			# save the inference results (if exists) in './intermediates/scene_id_default/inferred_obj_list', results is 4-dim Tuples
+			output_dir_inferred = './intermediates/scene_id_default/inferred_obj_list'
+			if not os.path.exists(output_dir_inferred):
+				os.makedirs(output_dir_inferred)
+			with open(os.path.join(output_dir_inferred, 'inferred.pkl'), 'wb') as f:
+				pickle.dump(obj_list, f)
+			print("inferred object list saved to ./intermediates/scene_id_default/inferred_obj_list")
+
 
 			# save inference results
 			bboxes =  results[-3]
@@ -862,7 +880,6 @@ class Controller:
 			np.save(
 				os.path.join(self.save_folder, str(self.iter), 'bbox_info'),
 				bbox_info)
-
 			# save mask images
 			if not self.background_sam:
 				mask_img_list = results[-4]
