@@ -363,8 +363,7 @@ class TSQPipeline():
 		voxel_size = self.voxel_size[object_class] # passed in from voxelize_config.yml, voxel_size is class-dependent
 		max_bbox_size = self.max_bbox_size[object_class] # passed in from voxelize_config.yml, max_bbox_size is class-dependent
 		marginal_bbox_size = self.marginal_bbox_size[object_class] # passed in from voxelize_config.yml, marginal_bbox_size is class-dependent
-		bbox = bbox.detach().cpu().numpy() 
-		# in the implementation of stage_1_2, "bbox" is precisely visualized, which is obviously smaller than the superquadric pcd of the according tablewares
+		bbox = bbox.detach().cpu().numpy() # bbox is the output bbox of DETR3D
 			
 		# bounding box
 		max_bbox = np.concatenate(
@@ -373,14 +372,14 @@ class TSQPipeline():
 				np.array([bbox[2] - bbox[5] + max_bbox_size[2]]),
 				max_bbox_size), 
 			axis=0
-		)# ( x , y , z-d+d_max , w_max , h_max, d_max )
+		)
 		marginal_bbox = np.concatenate(
 			(
 				bbox[0:2], 
 				np.array([bbox[2] - bbox[5] + marginal_bbox_size[2]]),
 				marginal_bbox_size), 
 			axis=0
-		)# ( x , y , z-d+d_marginal , w_marg , h_marg, d_marg )
+		)# (x_center , z_center , y_center-0.5*d+0.5*d_marg , 0.5*w_marg , 0.5*h_marg, 0.5*d_marg )
 
 		# voxel carving
 		raw_voxel = voxel_carving(
@@ -391,7 +390,7 @@ class TSQPipeline():
 
 
 
-		# get bounding box inside voxels
+		# crop the stacked raw voxel together with the inside voxel
 		w_min1 = math.floor(w * (marginal_bbox[3] - max_bbox[3]) / (2 * marginal_bbox[3]))
 		w_max1 = math.ceil(w * (marginal_bbox[3] + max_bbox[3]) / (2 * marginal_bbox[3]))
 		h_min1 = math.floor(h * (marginal_bbox[4] - max_bbox[4]) / (2 * marginal_bbox[4]))

@@ -12,6 +12,7 @@ def voxel_carving(
 	silhouettes = mask_imgs#tensro.size 7*240*320
 
 	# function for calculation
+	# Batch sample pixel values from the image at 2D coordinates (u, v), with automatic boundary clamping.
 	def pointer_at_batch(image, u, v):
 		u = torch.clamp(u, 0, image.shape[1] - 1)
 		v = torch.clamp(v, 0, image.shape[0] - 1)
@@ -93,7 +94,7 @@ def voxel_carving(
 	# stack results
 	filled = torch.stack(filled)
 	filled = torch.sum(filled, dim=0).reshape(w, h, d) # raw voxel size
-	# In voxel_carving, the size of raw voxel is w*h*d, the marginal bbox is expanded with scaling factor 1/voxel_size
+	# In voxel_carving, the size of raw voxel is w*h*d, the visual hull size (marginal bbox) is further expanded with scaling factor 1/voxel_size
 
 	if smoothed:
 		occupancy = filled / len(projections) # this ensures that all voxel representations have a consistent resolution 
