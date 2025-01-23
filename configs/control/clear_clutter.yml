@@ -13,8 +13,8 @@ place_offset: 0.01
 # simulation setting
 enable_gui: True
 data_type: tableware
-object_types: ['BeerBottle'] # 'WineGlass', 'Bowl', 'Bottle', 'BeerBottle', 'HandlessCup', 'Mug', 'Dish'
-num_objects: 4
+object_types: ['Dish', 'Bowl', 'Mug', 'WineGlass'] # 'WineGlass', 'Bowl', 'Bottle', 'BeerBottle', 'HandlessCup', 'Mug', 'Dish'
+num_objects: 2
 use_convex_decomp: True
 
 # realworld setting

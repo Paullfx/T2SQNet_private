@@ -78,7 +78,7 @@ class TSQPipeline():
 		
 	def load_voxel_infos(self, voxel_data_config_path):
 		voxel_data_config = OmegaConf.load(voxel_data_config_path)
-		self.voxel_size = voxel_data_config['voxel_size'] #see voxel_data_config
+		self.voxel_size = voxel_data_config['voxel_size'] 
 		self.max_bbox_size = voxel_data_config['max_bbox_size']
 		self.marginal_bbox_size = voxel_data_config['marginal_bbox_size']
 
@@ -379,7 +379,8 @@ class TSQPipeline():
 				np.array([bbox[2] - bbox[5] + marginal_bbox_size[2]]),
 				marginal_bbox_size), 
 			axis=0
-		)# (x_center , z_center , y_center-0.5*d+0.5*d_marg , 0.5*w_marg , 0.5*h_marg, 0.5*d_marg )
+		)# wrong comment: (x_center , z_center , y_center-0.5*d+0.5*d_marg , 0.5*w_marg , 0.5*h_marg, 0.5*d_marg )
+		# by inspecting the voxelize_config.yml, fuxiao thinks marginal_bbox_size[2] IS the half of the HEIGHT
 
 		# voxel carving
 		raw_voxel = voxel_carving(
