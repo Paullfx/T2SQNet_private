@@ -99,10 +99,6 @@ def voxel_carving(mesh,
         centers_pts[cid, :] = c[:3] # cid very likely index from 0 to . raw cid, and all columns. c[:3] include the first three elements of 4-dim c
         ctr.convert_from_pinhole_camera_parameters(param, allow_arbitrary=True) # 
 
-
-
-
-
         # capture depth image and make a point cloud
         vis.poll_events()
         vis.update_renderer()
@@ -150,8 +146,8 @@ def voxel_carving(mesh,
 scene_id = "tableware_5_12"
 
 output_folder = "./data_cubic_mesh"
-output_file_path = os.path.join(output_folder, f"{scene_id}_cubic_mesh.ply")
-mesh = o3d.io.read_triangle_mesh(output_file_path)
+mesh_file_path = os.path.join(output_folder, f"{scene_id}_cubic_mesh.ply")
+mesh = o3d.io.read_triangle_mesh(mesh_file_path)
 o3d.visualization.draw_geometries([mesh])
 
 output_folder = "./voxel_carving_results"

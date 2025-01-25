@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 
 # reference: https://towardsdatascience.com/how-to-automate-voxel-modelling-of-3d-point-cloud-with-python-459f4d43a227
 
+# 
+
 ####### load point cloud #######
 
 scene_id = "tableware_5_12"
