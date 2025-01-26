@@ -47,17 +47,19 @@ def draw_3d_bbox(ax, bbox, label=None, color='blue'):
 # exp_index = "scene_id_default"# "tableware_3_9" #blender_table_0_3 #"pybullet_single_BeerBottle" # "pybullet_table_1_2"
 exp_index = "pybullet_table_1_2"
 input_dir = f'./intermediates/{exp_index}/bboxes_cls'
-results_dir = f'./intermediates/{exp_index}/results'
+# results_dir = f'./intermediates/{exp_index}/results'
 gt_dir = f'./intermediates/{exp_index}/ground_truth'
 inferred_object_list_dir = f'./intermediates/{exp_index}/inferred_obj_list'
 bbox_info_dir = f'./intermediates/{exp_index}/bbox_info'
+voxel_hull_dir = f'./intermediates/{exp_index}/object_list'
 
 bboxes_path = os.path.join(input_dir, 'bboxes.pkl')
 cls_path = os.path.join(input_dir, 'cls.pkl')
-results_path = os.path.join(results_dir, 'results.pkl')
+# results_path = os.path.join(results_dir, 'results.pkl')
 gt_path = os.path.join(gt_dir, 'gt.pkl')
 inferred_object_list_path = os.path.join(inferred_object_list_dir, 'inferred.pkl')
 bbox_info_path = os.path.join(bbox_info_dir, 'bbox_info.pkl')
+voxel_hull_path = os.path.join(voxel_hull_dir, 'object_list.pkl')
 
 voxel_data_config_path = "./configs/voxelize_config.yml"
 
@@ -96,14 +98,23 @@ except FileNotFoundError:
     print(f"Error: File not found at {inferred_object_list_path}. Please check the path and try again.")
     inferred = None
 
-# Load results
-try:
-    with open(results_path, 'rb') as f:
-        results = pickle.load(f)
-    print("Results loaded successfully.")
-except FileNotFoundError:
-    print(f"Error: File not found at {results_path}. Please check the path and try again.")
-    results = None
+# Load voxel hull
+with open(voxel_hull_path, 'rb') as f:
+    obj_list = pickle.load(f)
+
+# print all the tabelware classes
+for i in range(len(obj_list[0])):
+    print (type(obj_list[0][i]))
+
+
+# # Load results
+# try:
+#     with open(results_path, 'rb') as f:
+#         results = pickle.load(f)
+#     print("Results loaded successfully.")
+# except FileNotFoundError:
+#     print(f"Error: File not found at {results_path}. Please check the path and try again.")
+#     results = None
 
 # # Load class names
 # class_names = []
@@ -121,10 +132,10 @@ except FileNotFoundError:
 # else:
 #     print(f"Error: Bounding box file not found at {bboxes_path}.")
 
-# Validate results data
-if results is None or not results:
-    print("No results to process. Exiting.")
-    exit()
+# # Validate results data
+# if results is None or not results:
+#     print("No results to process. Exiting.")
+#     exit()
 
 positions = []
 # sq_results = results[3][0]  # the list of reconstructed tablewares object using superquadric fitting parameters
@@ -185,9 +196,9 @@ for i, obj in enumerate(points):
     x, y, z = obj[:, 0], obj[:, 1], obj[:, 2]
     ax.scatter(x, y, z, color=colors[i], marker='.', label=f"reconstructed T2SQNet: {class_names[i]}", s=5)
 
-# # Plot reconstructed object position   
+# Plot reconstructed object position   
 for i, pos in enumerate(positions):
-    ax.scatter(pos[0], pos[1], pos[2], color='red', marker='o', s=100, label=f"Reconstructed SE3: {class_names[i]}" if i == 0 else None)
+    ax.scatter(pos[0], pos[1], pos[2], color='red', marker='o', s=100, label=f"Reconstructed position: {class_names[i]}" if i == 0 else None)
 
 # Plot gt point cloud data
 for i, obj in enumerate(points_gt):
@@ -196,14 +207,11 @@ for i, obj in enumerate(points_gt):
 
 # # Plot ground truth object position
 for i, pos_gt in enumerate(position_gt):
-    ax.scatter(pos_gt[0], pos_gt[1], pos_gt[2], color='blue', marker='^', s=100, label=f"GT SE3: {class_names[i]}" if i == 0 else None)
+    ax.scatter(pos_gt[0], pos_gt[1], pos_gt[2], color='blue', marker='^', s=100, label=f"GT position: {class_names[i]}" if i == 0 else None)
 
 
 # Plot bounding boxes using precisely the same coordinate transform in the original T2SQNet code file 
-# # coordinate transformation from the DETR3D network output into the voxel hull. is directly taken from the pipeline.py file in the T2SQNet code
-
-
-
+# # coordinate transformation from the DETR3D network output (bbox) into the voxel hull (marginal bbox and max bbox) is directly taken from the pipeline.py file in the T2SQNet code
 for bbox, label in zip(bboxes, class_names):
     if hasattr(bbox, 'cpu'):
         bbox = bbox.cpu().numpy()

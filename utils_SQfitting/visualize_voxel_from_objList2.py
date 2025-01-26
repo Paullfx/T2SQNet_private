@@ -71,7 +71,7 @@ def visualize_voxels_with_open3d(voxel_list, exp_index):
 
 
 # Define the experiment index
-exp_index = "blender_table_0_3"  # Example experiment index e.g. "blender_table_0_3" "scene_id_default"
+exp_index = "pybullet_single_HandlessCup"  # Example experiment index e.g. "blender_table_0_3" "scene_id_default" "pybullet_single_HandlessCup"
 file_path = f'./intermediates/{exp_index}/object_list/object_list.pkl'
 
 # Load the object list
@@ -82,6 +82,6 @@ with open(file_path, 'rb') as f:
 for i in range(len(obj_list[0])):
     print (type(obj_list[0][i]))
 
-# Call the function to visualize
+# Call the function to visualize, 
 visualize_voxels_with_open3d(obj_list[1], exp_index)
 

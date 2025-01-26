@@ -141,13 +141,15 @@ def voxel_carving(mesh,
 
     return voxel_carving_surface, voxel_carving, voxel_surface
 
-### load the data and call the function ###
+### load the data 
 
 scene_id = "tableware_5_12"
 
-output_folder = "./data_cubic_mesh"
-mesh_file_path = os.path.join(output_folder, f"{scene_id}_cubic_mesh.ply")
+mesh_folder = "./data_cubic_mesh"
+mesh_file_path = os.path.join(mesh_folder, f"{scene_id}_cubic_mesh.ply")
 mesh = o3d.io.read_triangle_mesh(mesh_file_path)
+#add a print statement to check the mesh
+print(mesh)
 o3d.visualization.draw_geometries([mesh])
 
 output_folder = "./voxel_carving_results"
@@ -159,6 +161,8 @@ visualization = True
 cubic_size = 2.0
 voxel_resolution = 128.0
 
+
+### run the voxel carving method ###
 voxel_grid, voxel_carving, voxel_surface = voxel_carving(
     mesh, output_filename, camera_path, cubic_size, voxel_resolution)
 

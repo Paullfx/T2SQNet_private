@@ -14,16 +14,28 @@ tableware_ply_path = f"/home/fuxiao/Projects/Orbbec/concept-graphs/conceptgraph/
 point_cloud = o3d.io.read_point_cloud(tableware_ply_path)
 print(point_cloud)
 
+# pointcloud boundings
+point_cloud_bbox = point_cloud.get_axis_aligned_bounding_box()
+point_cloud_extent = point_cloud_bbox.get_extent()
+print(f"Point Cloud Size: {len(point_cloud.points)} points")
+print(f"Point Cloud Bounding Box: Length = {point_cloud_extent[0]}, Width = {point_cloud_extent[1]}, Height = {point_cloud_extent[2]}")
+
 # vis window 1, raw pcd
 print('The first window visualize the original segmented pcd from CG')
 o3d.visualization.draw_geometries([point_cloud]) 
 
 ############ surface voxel grid ############
 print('voxelization in process')
-voxel_size = 0.004843219465611634  # use the predefined voxel size for specific tableware from voxelize_config.yml 
-# Bowl: 0.004843219465611634 # Mug: 0.001832966443807953
+voxel_size = 0.002201045924570001  # use the predefined voxel size for specific tableware from voxelize_config.yml 
+# Bowl: 0.004843219465611634 # Mug: 0.001832966443807953 #HandlessCup: 0.002201045924570001
 voxel_grid = o3d.geometry.VoxelGrid.create_from_point_cloud(point_cloud,
                                                             voxel_size=voxel_size)
+
+# voxel grid boundings
+voxel_grid_bbox = voxel_grid.get_axis_aligned_bounding_box()
+voxel_grid_extent = voxel_grid_bbox.get_extent()
+print(f"Voxel Grid Size: {len(voxel_grid.get_voxels())} voxels")
+print(f"Voxel Grid Bounding Box: Length = {voxel_grid_extent[0]}, Width = {voxel_grid_extent[1]}, Height = {voxel_grid_extent[2]}")
 
 ### vis window 2, surface voxel grid ###
 print('The second window visualize the voxel_grid ')
@@ -81,6 +93,14 @@ vox_mesh.scale(voxel_size, [0,0,0]) # Then, we scale our model by the voxel size
 
 vox_mesh.translate(voxel_grid.origin, relative=True) # Finally, we need to translate our voxel assembly to its true original position by translating using the voxel grid origin relatively.
 vox_mesh.merge_close_vertices(0.0000001)
+
+# vox_mesh bounding
+vox_mesh_bbox = vox_mesh.get_axis_aligned_bounding_box()
+vox_mesh_extent = vox_mesh_bbox.get_extent()
+print(f"Voxel Mesh Bounding Box: Length = {vox_mesh_extent[0]}, Width = {vox_mesh_extent[1]}, Height = {vox_mesh_extent[2]}")
+print(f"Voxel Mesh Vertex Count: {len(vox_mesh.vertices)}")
+print(f"Voxel Mesh Triangle Count: {len(vox_mesh.triangles)}")
+
 
 ### vis window 3, cubic mesh ###
 print('The third window visualize the generated cubic mesh')

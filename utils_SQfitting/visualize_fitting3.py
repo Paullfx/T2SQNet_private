@@ -16,7 +16,7 @@ def grid_to_bbox_coordinates(i, j, k, bbox, voxel_size):
     z_actual = bbox[2] - bbox[5] + k * voxel_size + 0.5 * voxel_size
     return x_actual, y_actual, z_actual
 
-def visualize_voxels_with_open3d_single(voxel_dict):
+def visualize_voxels_with_open3d_single(voxel_dict, exp_index):
     """
     Visualize a single voxel dictionary using Open3D, displaying both parts of the voxel data in separate windows.
     
@@ -65,10 +65,10 @@ def visualize_voxels_with_open3d_single(voxel_dict):
         return
 
     # Extract point cloud data
-    sq_results = results[3][0]  # the list of detected objects
+    # sq_results = results[3][0]  # the list of detected objects
     number_of_points = 1000
     points = []
-    points.append(results[3][0][3].get_point_cloud(number_of_points=number_of_points)) #results[3][0][i] for the next object 
+    points.append(results[3][0][0].get_point_cloud(number_of_points=number_of_points)) #results[3][0][i] for the next object 
     # for obj in sq_results:
     #     points.append(obj.get_point_cloud(number_of_points=number_of_points))  # Use the get_point_cloud function
     #     print(type(obj))
@@ -180,7 +180,7 @@ def visualize_voxels_with_open3d_single(voxel_dict):
         print(f"Invalid voxel data, type: {type(voxel_dict)}")
 
 # Define the experiment index
-exp_index = "blender_table_0_3"  # scene_id_default # "blender_table_0_3"
+exp_index = "pybullet_single_HandlessCup"  # scene_id_default # "blender_table_0_3" # "pybullet_single_HandlessCup"
 file_path = f'./intermediates/{exp_index}/object_list/object_list.pkl'
 
 # Load the object list
@@ -188,4 +188,4 @@ with open(file_path, 'rb') as f:
     obj_list = pickle.load(f)
 
 # Visualize the first voxel dictionary from obj_list[1]
-visualize_voxels_with_open3d_single(obj_list[1][3]) # ob_list[1][i] for the next object
+visualize_voxels_with_open3d_single(obj_list[1][3], exp_index) # ob_list[1][i] for the next object

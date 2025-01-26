@@ -6,6 +6,8 @@ import torch
 import numpy as np
 import os
 import pickle
+import open3d as o3d
+from utils_SQfitting.visualize_voxel_from_objList2 import visualize_voxels_with_open3d
 
 if __name__ == "__main__":
 
@@ -27,32 +29,32 @@ if __name__ == "__main__":
     )
 
     # prepare data input
-    object_idx = 3 #     "WineGlass" : 0, "Bowl" : 1, "Bottle" : 2, "BeerBottle" : 3,
+    object_idx = 4 #     "WineGlass" : 0, "Bowl" : 1, "Bottle" : 2, "BeerBottle" : 3,
     # "HandlessCup" : 4, "Mug" : 5, "Dish" : 6
 
-    device = torch.device(t2sqnet_cfg["device"])
+    device = torch.device('cuda:0')
 
     # Load the voxel 
 
     # Define path flexibly with experiment index
-    exp_index = "scene_id_default"  # Example experiment index
+    exp_index = "pybullet_single_HandlessCup"  # Example experiment index
     file_path = f'./intermediates/{exp_index}/object_list/object_list.pkl'
-
-    # Define Path fixed
-
-
     # Load the object list
     with open(file_path, 'rb') as f:
         obj_list = pickle.load(f)
-    # print all the tabelware classes
-    for i in range(len(obj_list[0])):
-        print (type(obj_list[0][i]))
-    
-    voxel = obj_list[1][0]['voxel']#output of voxel_carving, 
+    ## print all the tabelware classes
+    # for i in range(len(obj_list[0])):
+    #     print (type(obj_list[0][i]))
+    # the saved obj_list contains object_list(superquadric parameters) and voxel_info (results of voxel carving, including voxel and voxel_scale)
+    voxel = obj_list[1][0]['voxel']
+    visualize_voxels_with_open3d(obj_list[1], exp_index)
+
+
 
     # load voxel_size
     # Approach 1: load voxel_scale from obj_list
     voxel_scale = obj_list[1][0]['voxel_scale']
+    # print(voxel_scale)
     # # Approach 2:load from yml
     # voxel_data_config = OmegaConf.load(voxel_data_config_path)
     # voxel_scale = voxel_data_config['voxel_size'] #torch.tensor([0.01], device=device)
@@ -61,11 +63,13 @@ if __name__ == "__main__":
 
     # param_predictor
     obj_info = tsqnet.param_predictors[object_idx](voxel.unsqueeze(0), voxel_scale).squeeze()
+    print (obj_info)
 
-    # save the obj_info in ./intermediates/{exp_index}/obj_info/obj_info.pkl
-    output_dir_obj_info = f'./intermediates/{exp_index}/obj_info'  
-    if not os.path.exists(output_dir_obj_info):
-        os.makedirs(output_dir_obj_info)
-    with open(os.path.join(output_dir_obj_info, 'obj_info.pkl'), 'wb') as f:
-        pickle.dump(obj_info, f)
+
+    # # save the obj_info in ./intermediates/{exp_index}/obj_info/obj_info.pkl
+    # output_dir_param = f'./intermediates/{exp_index}/param'  
+    # if not os.path.exists(output_dir_param):
+    #     os.makedirs(output_dir_param)
+    # with open(os.path.join(output_dir_param, 'param.pkl'), 'wb') as f:
+    #     pickle.dump(obj_info, f)
 
