@@ -598,6 +598,66 @@ class Dish(Tableware):
 
 		return grasp_poses_bowl
 
+class Laptop(Tableware):
+    def __init__(
+        self,
+        SE3,
+        params,
+        device,
+        t=0.01,
+        process_mesh=True
+    ):
+        self.name = "Laptop"
+        self.range = {
+            "base_length": [0.2, 0.4],   # (20cm-40cm)
+            "base_width": [0.15, 0.3],   # 15cm-30cm)
+            "base_height": [0.01, 0.03], # 1cm-3cm)
+            "screen_thickness": [0.005, 0.02],  # 0.5cm-2.0cm)
+            "screen_angle": [100, 130],  # 100°-130°)
+        }
+        super().__init__(SE3, params, self.range, device, t, process_mesh)
+        self.nonsymmetric_idx = [0,1,2,3,4,5]
+        self.construct()
+
+    def construct(self):
+        base_length = self.params[..., [0]]
+        base_width = self.params[..., [1]]
+        base_height = self.params[..., [2]]
+        screen_thickness = self.params[..., [3]]
+        screen_angle = self.params[..., [4]] * (np.pi / 180)  # angle to rad
+
+        ones = torch.ones_like(base_length)
+
+        # ** Base**
+        SE3_base = self.SE3.clone()
+        SE3_base[..., 0:3, 3] += self.SE3[..., 0:3, 2] * base_height * 0.5
+        params_base = torch.cat([base_length, base_width, base_height * 0.5, ones * 0.3, ones * 0.3, ones * 0], dim=-1)  
+
+        # **Screen**
+        SE3_screen = self.SE3.clone()
+        
+        # **connection on hinge**
+        SE3_screen[..., 0:3, 3] += self.SE3[..., 0:3, 2] * (base_height)  # raise up to base_height
+        SE3_screen[..., 0:3, 3] += self.SE3[..., 0:3, 0] * (base_length * 0.5)  # move to the end of base
+
+        # **rotate screen**
+        R = torch.eye(4).repeat(SE3_screen.shape[0], 1, 1).to(self.device)
+        R[..., 0, 0] = torch.cos(screen_angle)
+        R[..., 0, 2] = -torch.sin(screen_angle)
+        R[..., 2, 0] = torch.sin(screen_angle)
+        R[..., 2, 2] = torch.cos(screen_angle)
+        SE3_screen = torch.matmul(SE3_screen, R)
+
+        params_screen = torch.cat([base_length * 0.9, base_width * 0.9, screen_thickness * 0.5, ones * 0.2, ones * 1.0, ones * 0], dim=-1)
+
+        self.base = SuperQuadric(SE3_base, params_base, type="superellipsoid")
+        self.screen = SuperQuadric(SE3_screen, params_screen, type="superellipsoid")
+
+        self.quadrics = [self.base, self.screen]
+
+
+
+
 name_to_class = {
 	"WineGlass": WineGlass,
 	"Bowl": Bowl,
@@ -606,6 +666,7 @@ name_to_class = {
 	"HandlessCup": HandlessCup,
 	"Mug": Mug,
 	"Dish": Dish,
+	"Laptop": Laptop,
 }
 
 idx_to_class = {
@@ -615,7 +676,8 @@ idx_to_class = {
 	3: BeerBottle,
 	4: HandlessCup,
 	5: Mug,
-	6: Dish	
+	6: Dish,
+	7: Laptop,	
 }
 
 name_to_idx = {
@@ -625,7 +687,8 @@ name_to_idx = {
 	"BeerBottle" : 3,
 	"HandlessCup" : 4,
 	"Mug" : 5,
-	"Dish" : 6	
+	"Dish" : 6,
+	"Laptop": 7,	
 }
 
 idx_to_name = {
@@ -635,5 +698,6 @@ idx_to_name = {
 	3: "BeerBottle",
 	4: "HandlessCup",
 	5: "Mug",
-	6: "Dish"	
+	6: "Dish",
+	7: "Laptop",	
 }
