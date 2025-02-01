@@ -29,7 +29,7 @@ class ControlSimulationEnv:
 	def __init__(
 		self, 
 		enable_gui=True,
-		object_types=['WineGlass', 'Bowl', 'Bottle', 'BeerBottle', 'HandlessCup', 'Mug', 'Dish'], 
+		object_types=['WineGlass', 'Bowl', 'Bottle', 'BeerBottle', 'HandlessCup', 'Mug', 'Dish','Laptop'], 
 		num_objects=4,
 		sim_type='shelf',
 		open_shelf=True,

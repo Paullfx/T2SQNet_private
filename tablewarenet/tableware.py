@@ -638,14 +638,17 @@ class Laptop(Tableware):
         
         # **connection on hinge**
         SE3_screen[..., 0:3, 3] += self.SE3[..., 0:3, 2] * (base_height)  # raise up to base_height
-        SE3_screen[..., 0:3, 3] += self.SE3[..., 0:3, 0] * (base_length * 0.5)  # move to the end of base
+        SE3_screen[..., 0:3, 3] += self.SE3[..., 0:3, 0] * (base_length)  # move to the end of base
 
         # **rotate screen**
-        R = torch.eye(4).repeat(SE3_screen.shape[0], 1, 1).to(self.device)
+        #R = torch.eye(4).repeat(SE3_screen.shape[0], 1, 1).to(self.device)
+        R= torch.eye(4).to(self.device)
         R[..., 0, 0] = torch.cos(screen_angle)
         R[..., 0, 2] = -torch.sin(screen_angle)
         R[..., 2, 0] = torch.sin(screen_angle)
         R[..., 2, 2] = torch.cos(screen_angle)
+		
+
         SE3_screen = torch.matmul(SE3_screen, R)
 
         params_screen = torch.cat([base_length * 0.9, base_width * 0.9, screen_thickness * 0.5, ones * 0.2, ones * 1.0, ones * 0], dim=-1)

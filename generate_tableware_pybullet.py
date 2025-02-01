@@ -2,6 +2,7 @@ import os
 import numpy as np
 import pickle
 import argparse
+import time
 from tqdm import tqdm
 from datetime import datetime
 from omegaconf import OmegaConf
@@ -132,7 +133,8 @@ def generate_data(
 		pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
 		f.close()
 
-	env.sim.close()
+	env.sim.close() #gui close
+	# time.sleep(100)
 
 if __name__ == '__main__':
 	
