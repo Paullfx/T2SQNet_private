@@ -1,0 +1,194 @@
+data:
+  training:
+    batch_size: 32
+    class_name: HandlessCup
+    dataset: voxel
+    max_data_num: 999999
+    num_workers: 0
+    preload: false
+    roots:
+    - datasets/test_voxelized
+    shuffle: true
+    split: training
+    voxel_size_noise_max:
+    - 2
+    - 2
+    - 2
+    voxel_trans_noise_max: 4
+  validation:
+    batch_size: 32
+    class_name: HandlessCup
+    dataset: voxel
+    max_data_num: 999999
+    num_workers: 0
+    preload: false
+    roots:
+    - datasets/test_voxelized
+    shuffle: true
+    split: validation
+    voxel_size_noise_max:
+    - 2
+    - 2
+    - 2
+    voxel_trans_noise_max: 4
+device: cuda
+logger:
+  training:
+    items:
+      chamfer_loss:
+        interval: 1
+        type: scalar
+      gt_pc:
+        color:
+        - 255
+        - 255
+        - 255
+        interval: 999999999
+        type: param_to_pc
+      loss:
+        interval: 1
+        type: scalar
+      ori_loss:
+        interval: 1
+        type: scalar
+      param_loss:
+        interval: 1
+        type: scalar
+      pos_loss:
+        interval: 1
+        type: scalar
+      pred_pc:
+        color:
+        - 255
+        - 0
+        - 0
+        interval: 5000
+        type: param_to_pc_with_gt
+        with_pc: gt_pc
+      voxel:
+        downsample: 1024
+        interval: 5000
+        type: voxel
+        voxel_size: 0.002
+    prefix: train
+    type: voxellogger
+  validation:
+    best_model_metric: chamfer_metric
+    items:
+      chamfer_loss:
+        interval: 1
+        type: average_meter
+      chamfer_metric:
+        criterion: "\u2193"
+        interval: 1
+        type: average_meter
+      gt_pc:
+        color:
+        - 255
+        - 255
+        - 255
+        interval: 99999999
+        type: param_to_pc
+      loss:
+        interval: 1
+        type: average_meter
+      ori_loss:
+        interval: 1
+        type: average_meter
+      param_loss:
+        interval: 1
+        type: average_meter
+      pos_loss:
+        interval: 1
+        type: average_meter
+      pred_pc:
+        color:
+        - 255
+        - 0
+        - 0
+        interval: 99999999
+        type: param_to_pc_with_gt
+        with_pc: gt_pc
+      voxel:
+        downsample: 1024
+        interval: 99999999
+        type: voxel
+        voxel_size: 0.002
+    prefix: valid
+    type: voxellogger
+model:
+  arch: voxel_head
+  backbone:
+    arch: resnet3d
+    model_depth: 10
+    n_input_channels: 2
+    no_max_pool: true
+  cls_name: HandlessCup
+  common_feature_layer:
+    activation:
+    - leakyrelu
+    arch: fc_vec
+    in_chan: 512
+    l_hidden:
+    - 512
+    out_activation: leakyrelu
+    out_chan: 512
+  loss_config:
+    chamfer:
+      weight: 1.0
+    orientation:
+      weight: 0.0
+    param:
+      use_only_nonsymmetric: false
+      weight: 0.0
+    position:
+      weight: 0.0
+  ori_from_global: false
+  ori_head:
+    activation:
+    - leakyrelu
+    - leakyrelu
+    arch: fc_vec
+    in_chan: 624
+    l_hidden:
+    - 256
+    - 256
+    out_activation: linear
+    out_chan: 2
+  param_from_global: false
+  param_head:
+    activation:
+    - leakyrelu
+    - leakyrelu
+    arch: fc_vec
+    in_chan: 624
+    l_hidden:
+    - 256
+    - 256
+    out_activation: linear
+    out_chan: 4
+  pos_from_global: false
+  pos_head:
+    activation:
+    - leakyrelu
+    - leakyrelu
+    - leakyrelu
+    arch: fc_vec
+    in_chan: 624
+    l_hidden:
+    - 256
+    - 256
+    - 256
+    out_activation: sigmoid
+    out_chan: 3
+trainer:
+  detect_nan: false
+  n_epoch: 200
+  optimizer:
+    lr: 5.0e-05
+    name: adam
+  scheduler:
+    T_max: 200
+    type: cosineannealinglr
+  type: base
+wandb_project_name: Voxel_smooth

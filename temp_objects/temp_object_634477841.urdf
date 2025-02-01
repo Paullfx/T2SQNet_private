@@ -1,0 +1,23 @@
+
+		<robot name="object_634477841">
+			<link name="link_object_634477841">
+				<visual>
+					<geometry>
+						<mesh filename="temp_object_634477841.obj" />
+					</geometry>
+				</visual>
+
+				<collision>
+					<geometry>
+						<mesh filename="temp_object_634477841.obj" />
+					</geometry>
+				</collision>
+				
+				<inertial>
+					<origin rpy="0 0 0" xyz="0 0 0"/>
+					<mass value="0.3" />
+					<inertia ixx="0.3" ixy="0" ixz="0" iyy="0.3" iyz="0" izz="0.3" />
+				</inertial>
+			</link>
+		</robot>
+		

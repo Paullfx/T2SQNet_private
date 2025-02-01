@@ -3,7 +3,7 @@ import torch
 from tqdm import tqdm, trange
 import torch.distributed as dist
 
-class BaseTrainer: #train: loss? optimizer? # It also contains evaluation
+class BaseTrainer: 
     """Trainer for a conventional iterative training of model"""
     def __init__(self, training_cfg, device):
         self.cfg = training_cfg

@@ -36,8 +36,6 @@ class SuperQuadric():
 				resolution_height, t=self.t, process_mesh=self.process_mesh)
 		mesh.compute_vertex_normals()
 		mesh.paint_uniform_color(color)
-		print("SE3_numpy type:", type(self.SE3_numpy))
-		print("SE3_numpy shape:", self.SE3_numpy.shape)
 		mesh.transform(self.SE3_numpy)
 		return mesh
 	
