@@ -14,6 +14,7 @@ class Tableware():
 	def __init__(self, SE3, params, range, device='cpu', t=0.01, process_mesh=True):
 		self.quadrics = []
 		self.SE3 = SE3.float()
+		print(f"[Tableware] SE3 initialized: shape={self.SE3.shape}, dtype={self.SE3.dtype}") #debug
 		self.range_torch = torch.tensor([range[key] for key in range]).to(device).float()
 		self.device = device
 		self.params = params
@@ -598,6 +599,69 @@ class Dish(Tableware):
 
 		return grasp_poses_bowl
 
+# class Laptop(Tableware):
+#     def __init__(
+#         self,
+#         SE3,
+#         params,
+#         device,
+#         t=0.01,
+#         process_mesh=True
+#     ):
+#         self.name = "Laptop"
+#         self.range = {
+#             "base_length": [0.2, 0.4],   # (20cm-40cm)
+#             "base_width": [0.15, 0.3],   # 15cm-30cm)
+#             "base_height": [0.01, 0.03], # 1cm-3cm)
+#             "screen_thickness": [0.005, 0.02],  # 0.5cm-2.0cm)
+#             "screen_angle": [100, 130],  # 100°-130°)
+#         }
+#         super().__init__(SE3, params, self.range, device, t, process_mesh)
+#         self.nonsymmetric_idx = [0,1,2,3,4,5]
+#         self.construct()
+
+#     def construct(self):
+#         base_length = self.params[..., [0]]
+#         base_width = self.params[..., [1]]
+#         base_height = self.params[..., [2]]
+#         screen_thickness = self.params[..., [3]]
+#         screen_angle = self.params[..., [4]] * (np.pi / 180)  # angle to rad
+
+#         ones = torch.ones_like(base_length)
+
+#         # ** Base**
+#         SE3_base = self.SE3.clone()
+#         SE3_base[..., 0:3, 3] += self.SE3[..., 0:3, 2] * base_height
+#         params_base = torch.cat([base_width * 0.5, base_length * 0.5, base_height * 0.5, ones * 0.3, ones * 0.3, ones * 0.1], dim=-1)  
+
+#         # **Screen**
+#         SE3_screen = self.SE3.clone()
+        
+# 		# **connection on hinge**
+#         SE3_screen[..., 0:3, 3] += self.SE3[..., 0:3, 2] * (base_height) 
+#         SE3_screen[..., 0:3, 3] -= self.SE3[..., 0:3, 0] * (base_width) * 0.5  # move to the end of base
+
+#         # **rotate screen**
+#         #R = torch.eye(4).repeat(SE3_screen.shape[0], 1, 1).to(self.device)
+#         R= torch.eye(4).to(self.device)
+#         R[..., 0, 0] = torch.cos(-screen_angle)
+#         R[..., 0, 2] = torch.sin(-screen_angle)
+#         R[..., 2, 0] = -torch.sin(-screen_angle)
+#         R[..., 2, 2] = torch.cos(-screen_angle)
+		
+
+#         SE3_screen = torch.matmul(SE3_screen, R)
+#         SE3_screen[..., 0:3, 3] += self.SE3[..., 0:3, 0] * (base_width) * 0.5 * torch.cos(screen_angle)
+#         SE3_screen[..., 0:3, 3] += self.SE3[..., 0:3, 2] * (base_width) * 0.5 * torch.sin(screen_angle) 
+
+
+#         params_screen = torch.cat([base_width * 0.5, base_length * 0.5, screen_thickness * 0.5, ones * 0.3, ones * 0.3, ones * 0.1], dim=-1)
+
+#         self.base = SuperQuadric(SE3_base, params_base, type="superellipsoid")
+#         self.screen = SuperQuadric(SE3_screen, params_screen, type="superellipsoid")
+
+#         self.quadrics = [self.base, self.screen]
+
 class Laptop(Tableware):
     def __init__(
         self,
@@ -610,59 +674,65 @@ class Laptop(Tableware):
         self.name = "Laptop"
         self.range = {
             "base_length": [0.2, 0.4],   # (20cm-40cm)
-            "base_width": [0.15, 0.3],   # 15cm-30cm)
+            "base_width_ratio": [0.56, 0.85],  # width = length * ratio (0.75x-1.0x of length)
             "base_height": [0.01, 0.03], # 1cm-3cm)
             "screen_thickness": [0.005, 0.02],  # 0.5cm-2.0cm)
             "screen_angle": [100, 130],  # 100°-130°)
         }
         super().__init__(SE3, params, self.range, device, t, process_mesh)
+        #print(f"[Laptop] SE3 after super(): shape={self.SE3.shape}, dtype={self.SE3.dtype}") #debug
         self.nonsymmetric_idx = [0,1,2,3,4,5]
         self.construct()
 
     def construct(self):
         base_length = self.params[..., [0]]
-        base_width = self.params[..., [1]]
+        base_width_ratio = self.params[..., [1]]
+        base_width = base_length * base_width_ratio
         base_height = self.params[..., [2]]
         screen_thickness = self.params[..., [3]]
         screen_angle = self.params[..., [4]] * (np.pi / 180)  # angle to rad
+
+        screen_angle = screen_angle.squeeze(-1) #debug
+        screen_angle = screen_angle.unsqueeze(-1)  # shape [10, 1]
 
         ones = torch.ones_like(base_length)
 
         # ** Base**
         SE3_base = self.SE3.clone()
         SE3_base[..., 0:3, 3] += self.SE3[..., 0:3, 2] * base_height
-        params_base = torch.cat([base_width * 0.5, base_length * 0.5, base_height * 0.5, ones * 0.3, ones * 0.3, ones * 0], dim=-1)  
+        params_base = torch.cat([base_width * 0.5, base_length * 0.5, base_height * 0.5, ones * 0.3, ones * 0.3, ones * 0.05], dim=-1)  
 
         # **Screen**
         SE3_screen = self.SE3.clone()
+        	
+        # **connection on hinge**
+        SE3_screen[..., 0:3, 3] += self.SE3[..., 0:3, 2] * base_height 
+        SE3_screen[..., 0:3, 3] -= self.SE3[..., 0:3, 0] * base_width * 0.5  # move to the end of base
+
+        # # **rotate screen**
+        # R = torch.eye(4).to(self.device)
+        # R[..., 0, 0] = torch.cos(torch.pi - screen_angle)
+        # R[..., 0, 2] = torch.sin(torch.pi - screen_angle)
+        # R[..., 2, 0] = -torch.sin(torch.pi - screen_angle)
+        # R[..., 2, 2] = torch.cos(torch.pi - screen_angle)
+
+		# **rotate screen** pi
+        R = torch.eye(4).to(self.device).repeat(screen_angle.shape[0], 1, 1)
+        R[..., 0, 0] = torch.cos(torch.pi - screen_angle.squeeze(-1))
+        R[..., 0, 2] = torch.sin(torch.pi - screen_angle.squeeze(-1))
+        R[..., 2, 0] = -torch.sin(torch.pi - screen_angle.squeeze(-1))
+        R[..., 2, 2] = torch.cos(torch.pi - screen_angle.squeeze(-1))
         
-		# **connection on hinge**
-        SE3_screen[..., 0:3, 3] += self.SE3[..., 0:3, 2] * (base_height) 
-        SE3_screen[..., 0:3, 3] -= self.SE3[..., 0:3, 0] * (base_width) * 0.5  # move to the end of base
+        SE3_screen = torch.matmul(SE3_screen, R).squeeze(0)
+        SE3_screen[..., 0:3, 3] += self.SE3[..., 0:3, 0] * base_width * 0.5 * torch.cos(screen_angle)
+        SE3_screen[..., 0:3, 3] += self.SE3[..., 0:3, 2] * base_width * 0.5 * torch.sin(screen_angle) 
 
-        # **rotate screen**
-        #R = torch.eye(4).repeat(SE3_screen.shape[0], 1, 1).to(self.device)
-        R= torch.eye(4).to(self.device)
-        R[..., 0, 0] = torch.cos(-screen_angle)
-        R[..., 0, 2] = torch.sin(-screen_angle)
-        R[..., 2, 0] = -torch.sin(-screen_angle)
-        R[..., 2, 2] = torch.cos(-screen_angle)
-		
-
-        SE3_screen = torch.matmul(SE3_screen, R)
-        SE3_screen[..., 0:3, 3] += self.SE3[..., 0:3, 0] * (base_width) * 0.5 * torch.cos(screen_angle)
-        SE3_screen[..., 0:3, 3] += self.SE3[..., 0:3, 2] * (base_width) * 0.5 * torch.sin(screen_angle) 
-
-
-        params_screen = torch.cat([base_width * 0.5, base_length * 0.5, screen_thickness * 0.5, ones * 0.3, ones * 0.3, ones * 0], dim=-1)
+        params_screen = torch.cat([base_width * 0.5, base_length * 0.5, screen_thickness * 0.5, ones * 0.3, ones * 0.3, ones * 0.05], dim=-1)
 
         self.base = SuperQuadric(SE3_base, params_base, type="superellipsoid")
         self.screen = SuperQuadric(SE3_screen, params_screen, type="superellipsoid")
 
         self.quadrics = [self.base, self.screen]
-
-
-
 
 name_to_class = {
 	"WineGlass": WineGlass,

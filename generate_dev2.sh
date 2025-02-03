@@ -5,12 +5,12 @@
 # Generate Scene using PyBullet
 python generate_tableware_pybullet.py \
 --data_path datasets \
---folder_name Laptop1 \
+--folder_name Laptop3 \
 --object_types 'Laptop' \
 --num_objects 1 \
---training_num 1 \
---validation_num 1 \
---test_num 1 \
+--training_num 10 \
+--validation_num 5 \
+--test_num 3 \
 --num_cameras 36 \
 --sim_type table \
 --reduce_ratio 2 \
@@ -29,4 +29,4 @@ python generate_tableware_pybullet.py \
 
 # Voxelize Objects for Training ResNet3D
 python generate_tableware_voxelize.py \
---folder_name datasets/Laptop1
+--folder_name datasets/Laptop3

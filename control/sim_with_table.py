@@ -39,7 +39,7 @@ class PybulletSim:
 			[
 				[self.high_table_position[0] - 0.30, self.high_table_position[0] + 0.3],
 				[self.high_table_position[1] - 0.3, self.high_table_position[1] + 0.3],
-				[self.high_table_position[2]+0.05/2, self.high_table_position[2] + 0.243-0.05/2 + 0.11]
+				[self.high_table_position[2], self.high_table_position[2] + 0.243-0.05/2 + 0.11] # [self.high_table_position[2]+0.05/2, self.high_table_position[2] + 0.243-0.05/2 + 0.11]
 			]
 		)
 		self.spawn_bounds = np.array(

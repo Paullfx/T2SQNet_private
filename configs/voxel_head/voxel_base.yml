@@ -2,7 +2,7 @@ wandb_project_name: Voxel_smooth
 data:
   training:
     dataset: voxel
-    roots: [datasets/test_voxelized]
+    roots: [datasets/Laptop3_voxelized] #[datasets/Laptop2_voxelized]
     # roots: [datasets/table_voxel/full_type_table_1_voxelized, datasets/table_voxel/full_type_table_2_voxelized]
     # , datasets/table_voxel/full_type_table_3_voxelized, datasets/table_voxel/full_type_table_4_voxelized]
     split: training
@@ -13,7 +13,7 @@ data:
     preload : False
   validation:
     dataset: voxel
-    roots: [datasets/test_voxelized]
+    roots: [datasets/Laptop3_voxelized] #[datasets/Laptop2_voxelized]
     # roots: [datasets/table_voxel/full_type_table_1_voxelized, datasets/table_voxel/full_type_table_2_voxelized]
     # , datasets/table_voxel/full_type_table_3_voxelized, datasets/table_voxel/full_type_table_4_voxelized]
     split: validation
