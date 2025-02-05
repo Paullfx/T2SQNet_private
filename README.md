@@ -22,9 +22,7 @@ Young Hun Kim*,
 ## Running on LSY working staton (Fuxiao)
 - In LSY working station, conda venv T2, branch fuxiao-desktop for stage 1.1 (Running the pretrained T2 pipeline), branch fuxiao-fitting for stage 1.2  (Run the superquadric-fitting module fo T2 on the segmented point cloud from ConceptGraph pipeline)
 
-## CG pipeline
-- mamba activate ros_cg, ros2 run sai_orbbec sai_publisher
-- mamba activate ros_cg, change data save folder in ros_tableware.yml, cd conceptgraph/slam, python3 ros_rerun_sai_T2.py
+
 ## How to analyse the intermediate results of T2SQNet in simulation (Fuxiao)
 - Run the [control.py](http://control.py/) in debug mode. Add config file. Add a breakpoint before the control part of the section (e.g. line 289 in [controller.py](http://controller.py/))，more details will be added...
     - Detail of running debug mode. Modify the clear_clutter.yml or target_retrieval.yml by e.g. choosing the table scene or shelf scene and then run this script in debug mode (add args in debugger json file)
@@ -77,6 +75,7 @@ Young Hun Kim*,
     - The figure on the left side shows the reconstructed pointcloud of tablewares object using superquadric fitting parameters and the “marginal bbox”
 - Analyse and visualize the intermediate/scene_id_default, more details will be added...
 ## How to analyse the intermediate results of T2SQNet with real data (Fuxiao)
+
 - The file ./data_pre_cg.py is for the data-processing of conceptgraph data. In ./data_pre_cg.py, give the source_path of .pkl.gz (e.g. '/home/fuxiao/Projects/Orbbec/concept-graphs/conceptgraph/dataset/external/tableware_2_2/exps/exp_default/pcd_exp_default.pkl.gz'). This stores the segmented pointcloud outputted by Conceptgraph pipeline
 - The file ./data_pre.py is for preparing the color images and camera poses as the input for the T2SQNet pipeline. In ./data_pre.py, firstly give the dataset_root (e.g. Path("/home/fuxiao/Projects/Orbbec/concept-graphs/conceptgraph/dataset/external") and the scene_id (experiment index like "tableware_1_13") that you want to analyse. Give the acoording camera extrinsics (note that the camera extrinsics should fit the image size accordingly). Secondly, because the pretrained T2SQNet takes seven images as input, you need to select the seven images and give their selected_indices (e.g. ["000000", "000005", "000017", "000062", "000073", "000088", "000098"])
 - The file ./my_code.py calls the functions of T2SQNet model and load the pretrained model weights from t2sqnet_config.yml. Running the my_code.py script will generate a folder with name "scene_id_default" in the folder ./intermediates. Various intermediate results can be found in this folder. Remember to rename it with the according scene_id after analysing such that the data of current experiment won't be covered by the next experiment.
@@ -85,7 +84,8 @@ Young Hun Kim*,
 
 ## Superquadric fitting with segmented point cloud from ConceptGraph pipeline(Fuxiao)
 - Pointcloud sampling
-  - Conda activate ros_cg. One terminal for running ros publisher "ros2 run sai_orbbec sai_publisher". Modify the "scene_id" in ros_tableware.yaml to e.g. "tableware_4_9". Then open another terminal, cd ./conceptgraph/slam, run "python3 ros_rerun_sai_T2.py".
+  - mamba activate ros_cg, ros2 run sai_orbbec sai_publisher
+  - Then open another terminal. mamba activate ros_cg, change data save folder in ros_tableware.yml( Modify the "scene_id" in ros_tableware.yaml to e.g. "tableware_4_9"), cd conceptgraph/slam, python3 ros_rerun_sai_T2.py
   - Data processing: firstly run fuxiao_open3d_tableware.py in /home/fuxiao/Projects/Orbbec/concept-graphs/conceptgraph/scripts/fuxiao_PC/drafts/fuxiao_open3d_tableware_test.py. This will generate a .ply file in 'concept-graphs/conceptgraph/dataset/external/{exp_id}/exps/exp/default' for the specific tableware e.g. "cup". Remember to modify this specific object to read the tableware from the point cloud accordingly. Secondly run tableware_process.py to denoise, this will  generate a "{exp_id}_bowl_denoised.ply" file. After experimenting, the parameters for denoise are setted "voxel_down_pcd.remove_radius_outlier(nb_points=200, radius=0.2)". 
 ## Preview
 <I><b>Sequential Decluttering (Left):</b> T<sup>2</sup>SQNet-based method succeeds in sequentially grasping the objects without re-recognition, while avoiding collisions with other objects and the environment. </I>
