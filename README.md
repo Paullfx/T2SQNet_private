@@ -21,6 +21,10 @@ Young Hun Kim*,
 
 ## Running on LSY working staton (Fuxiao)
 - In LSY working station, conda venv T2, branch fuxiao-desktop for stage 1.1 (Running the pretrained T2 pipeline), branch fuxiao-fitting for stage 1.2  (Run the superquadric-fitting module fo T2 on the segmented point cloud from ConceptGraph pipeline)
+
+## CG pipeline
+- mamba activate ros_cg, ros2 run sai_orbbec sai_publisher
+- mamba activate ros_cg, change data save folder in ros_tableware.yml, cd conceptgraph/slam, python3 ros_rerun_sai_T2.py
 ## How to analyse the intermediate results of T2SQNet in simulation (Fuxiao)
 - Run the [control.py](http://control.py/) in debug mode. Add config file. Add a breakpoint before the control part of the section (e.g. line 289 in [controller.py](http://controller.py/))，more details will be added...
     - Detail of running debug mode. Modify the clear_clutter.yml or target_retrieval.yml by e.g. choosing the table scene or shelf scene and then run this script in debug mode (add args in debugger json file)
