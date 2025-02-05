@@ -118,7 +118,7 @@ def process_file(
 
 	# total voxel carving data
 	if debug:
-		length = 0.767
+		length = 0.767 # a hard-coded value
 		voxel_grid_total = o3d.geometry.VoxelGrid.create_dense(
 			origin=[
 				workspace_origin[0]-length/2, 

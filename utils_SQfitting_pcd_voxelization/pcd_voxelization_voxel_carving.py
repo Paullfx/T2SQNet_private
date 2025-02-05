@@ -143,7 +143,7 @@ def voxel_carving(mesh,
 
 ### load the data 
 
-scene_id = "tableware_5_12"
+scene_id = "tableware_6_1"
 
 mesh_folder = "./data_cubic_mesh"
 mesh_file_path = os.path.join(mesh_folder, f"{scene_id}_cubic_mesh.ply")

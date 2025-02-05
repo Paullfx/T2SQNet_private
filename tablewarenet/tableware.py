@@ -14,7 +14,7 @@ class Tableware():
 	def __init__(self, SE3, params, range, device='cpu', t=0.01, process_mesh=True):
 		self.quadrics = []
 		self.SE3 = SE3.float()
-		print(f"[Tableware] SE3 initialized: shape={self.SE3.shape}, dtype={self.SE3.dtype}") #debug
+		#print(f"[Tableware] SE3 initialized: shape={self.SE3.shape}, dtype={self.SE3.dtype}") #debug
 		self.range_torch = torch.tensor([range[key] for key in range]).to(device).float()
 		self.device = device
 		self.params = params

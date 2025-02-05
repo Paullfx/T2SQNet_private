@@ -428,6 +428,8 @@ def debugging_windows_voxelize(data):
 	vis3.create_window(window_name="Object voxel carving", width=960-2, height=520-32, left=960*0+1, top=520+31)
 	vis4 = o3d.visualization.Visualizer()
 	vis4.create_window(window_name="Object Bounding Box", width=960-2, height=520-32, left=960*1+1, top=520+31)
+	vis5 = o3d.visualization.Visualizer()
+	vis5.create_window(window_name="Voxel Grid & Bounding Boxes", width=960-2, height=520-32, left=960*1+1, top=520+31)
 
 	# coordinate frame
 	frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.2)
@@ -461,6 +463,12 @@ def debugging_windows_voxelize(data):
 	vis4.add_geometry(max_obj_bbox)
 	if 'marginal_bbox' in data:
 		vis4.add_geometry(marginal_obj_bbox)
+
+	# vis5.add_geometry(vox)
+	# vis5.add_geometry(bbox1)
+	# vis5.add_geometry(bbox2)
+	# if 'marginal_bbox' in data:
+	# 	vis5.add_geometry(marginal_obj_bbox)
 
 	# update geometry
 	while True:
@@ -504,6 +512,13 @@ def debugging_windows_voxelize(data):
 		if not vis4.poll_events():
 			break
 		vis4.update_renderer()
+
+		# vis5.update_geometry(vox)
+		# vis5.update_geometry(bbox1)
+		# vis5.update_geometry(bbox2)
+		# if not vis5.poll_events():
+		# 	break
+		# vis5.update_renderer()
 
 	vis1.destroy_window()
 	vis2.destroy_window()

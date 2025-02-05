@@ -8,7 +8,7 @@ BLENDER_PROJ_PATH=assets/materials/material_lib_graspnet-v2.blend
 # Generate Scene using PyBullet
 python generate_tableware_pybullet.py \
 --data_path datasets \
---folder_name test \
+--folder_name test3 \
 --num_objects 4 \
 --training_num 10 \
 --validation_num 5 \
@@ -29,4 +29,4 @@ $BLENDER_BIN $BLENDER_PROJ_PATH --background \
 
 # Voxelize Objects for Training ResNet3D
 python generate_tableware_voxelize.py \
---folder_name datasets/test
+--folder_name datasets/test3

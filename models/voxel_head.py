@@ -82,7 +82,7 @@ class VoxelHead(nn.Module):
         obj.construct()
         pred_diff_pc = obj.get_differentiable_point_cloud(dtype='torch', use_mask=True)
         #debug       
-        print(f"pred_diff_pc shape: {pred_diff_pc.shape}, gt_diff_pc shape: {gt_diff_pc.shape}")
+        #print(f"pred_diff_pc shape: {pred_diff_pc.shape}, gt_diff_pc shape: {gt_diff_pc.shape}")
         return self.cham_loss(pred_diff_pc, gt_diff_pc)
         
     def position_loss(self, pred_pos, gt_pos):
@@ -175,7 +175,7 @@ class VoxelHead(nn.Module):
         gt_diff_pc = data["diff_pc"].to(device).float()
         
         #debug
-        print(f"gt_diff_pc shape: {gt_diff_pc.shape}")
+        #print(f"gt_diff_pc shape: {gt_diff_pc.shape}")
 
         # model forward
         pred_pose_param = self(voxel, voxel_scale)
