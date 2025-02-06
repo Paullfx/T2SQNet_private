@@ -5,18 +5,17 @@
 # Generate Scene using PyBullet
 python generate_tableware_pybullet.py \
 --data_path datasets \
---folder_name test3 \
---object_types 'Laptop' \
+--folder_name test4 \
 --num_objects 1 \
 --training_num 1 \
---validation_num 1 \
---test_num 1 \
---num_cameras 36 \
+--validation_num 0 \
+--test_num 0 \
+--num_cameras 72 \
 --sim_type table \
---reduce_ratio 2 \
---debug
-#--enable_gui \
-
+--reduce_ratio 2 
+#--enable_gui
+#--debug
+# --object_types 'BeerBottle' \
 
 # # Render RGB images using Blender
 # $BLENDER_BIN $BLENDER_PROJ_PATH --background \
@@ -28,7 +27,7 @@ python generate_tableware_pybullet.py \
 # ---split_list training validation test \
 # ---max_data_num 1 0 0
 
-# # Voxelize Objects for Training ResNet3D
-# python generate_tableware_voxelize.py \
-# --folder_name datasets/test2 \
-# --debug
+# Voxelize Objects for Training ResNet3D
+python generate_tableware_voxelize.py \
+--folder_name datasets/test4 \
+--debug

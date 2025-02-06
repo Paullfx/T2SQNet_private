@@ -11,19 +11,26 @@ import matplotlib.pyplot as plt
 
 scene_id = "tableware_6_1"
 tableware = "laptop"
-tableware_ply_path = f"/home/fuxiao/Projects/Orbbec/concept-graphs/conceptgraph/dataset/external/{scene_id}/exps/exp_default/{scene_id}_{tableware}_denoised.ply"
+tableware_ply_path = "/home/hamilton/Master_thesis/T2SQNet_private/tableware_6_1_laptop_denoised.ply"
+#f"/home/fuxiao/Projects/Orbbec/concept-graphs/conceptgraph/dataset/external/{scene_id}/exps/exp_default/{scene_id}_{tableware}_denoised.ply"
+#"/home/hamilton/Master_thesis/T2SQNet_private/tableware_6_1_laptop_denoised.ply"
 point_cloud = o3d.io.read_point_cloud(tableware_ply_path)
 print(point_cloud)
 
 # pointcloud boundings
 point_cloud_bbox = point_cloud.get_axis_aligned_bounding_box()
 point_cloud_extent = point_cloud_bbox.get_extent()
+bbox_center = point_cloud_bbox.get_center()
+point_cloud_bbox.color = (1, 0, 0)
 print(f"Point Cloud Size: {len(point_cloud.points)} points")
 print(f"Point Cloud Bounding Box: Length = {point_cloud_extent[0]}, Width = {point_cloud_extent[1]}, Height = {point_cloud_extent[2]}")
+print(f"BBox center {bbox_center}")
+frame_size = 0.1
+axis_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=frame_size, origin=[0, 0, 0])
 
 # vis window 1, raw pcd
-print('The first window visualize the original segmented pcd from CG')
-o3d.visualization.draw_geometries([point_cloud]) 
+print('The first window visualize the original segmented pcd from CG, x axis is red, y axis is green, z axis is blue.')
+o3d.visualization.draw_geometries([point_cloud, point_cloud_bbox, axis_frame], window_name="PointCloud with Bounding Box")
 
 ############ surface voxel grid ############
 print('voxelization in process')
@@ -40,27 +47,27 @@ print(f"Voxel Grid Bounding Box: Length = {voxel_grid_extent[0]}, Width = {voxel
 
 ### vis window 2, surface voxel grid ###
 print('The second window visualize the voxel_grid ')
-o3d.visualization.draw_geometries([voxel_grid])
+o3d.visualization.draw_geometries([voxel_grid, point_cloud_bbox, axis_frame], window_name="Voxel Grid")
 
-### add color on z axis ###, comment this part if you want to add color on x axis
-# voxels = voxel_grid.get_voxels() # extract the filled voxels
-# z_indices = np.array([v.grid_index[2] for v in voxels])
-# z_min, z_max = z_indices.min(), z_indices.max()
-# z_normalized = (z_indices - z_min) / (z_max - z_min)
-# colormap = plt.cm.jet
-# colors = colormap(z_normalized)[:, :3]
-# for v, color in zip(voxels, colors):
-#     v.color = color
-
-### add color on x axis ###, comment this part if you want to add color on z axis
+## add color on z axis ###, comment this part if you want to add color on x axis
 voxels = voxel_grid.get_voxels() # extract the filled voxels
-x_indices = np.array([v.grid_index[0] for v in voxels])
-x_min, x_max = x_indices.min(), x_indices.max()
-x_normalized = (x_indices - x_min) / (x_max - x_min)
+z_indices = np.array([v.grid_index[2] for v in voxels])
+z_min, z_max = z_indices.min(), z_indices.max()
+z_normalized = (z_indices - z_min) / (z_max - z_min)
 colormap = plt.cm.jet
-colors = colormap(x_normalized)[:, :3]
+colors = colormap(z_normalized)[:, :3]
 for v, color in zip(voxels, colors):
     v.color = color
+
+### add color on x axis ###, comment this part if you want to add color on z axis
+# voxels = voxel_grid.get_voxels() # extract the filled voxels
+# x_indices = np.array([v.grid_index[0] for v in voxels])
+# x_min, x_max = x_indices.min(), x_indices.max()
+# x_normalized = (x_indices - x_min) / (x_max - x_min)
+# colormap = plt.cm.jet
+# colors = colormap(x_normalized)[:, :3]
+# for v, color in zip(voxels, colors):
+#     v.color = color
 
 
 ############ cubic mesh ############
@@ -70,7 +77,7 @@ max_bound = voxel_grid.get_max_bound()
 grid_size = max_bound - min_bound
 voxel_size = voxel_grid.voxel_size
 voxel_count_estimate = np.prod(np.ceil(grid_size / voxel_size).astype(int))
-print(f"Estimated total number of voxels (including empty ones): {voxel_count_estimate}")
+print(f"Total number of voxels (including empty ones): {voxel_count_estimate}")
 
 occupied_voxel_count = len(voxels)
 print(f"Number of occupied voxels: {occupied_voxel_count}")
@@ -105,7 +112,7 @@ print(f"Voxel Mesh Triangle Count: {len(vox_mesh.triangles)}")
 
 ### vis window 3, cubic mesh ###
 print('The third window visualize the generated cubic mesh')
-o3d.visualization.draw_geometries([vox_mesh])
+o3d.visualization.draw_geometries([vox_mesh, point_cloud_bbox, axis_frame], window_name="Generated cubic mesh")
 
 
 
