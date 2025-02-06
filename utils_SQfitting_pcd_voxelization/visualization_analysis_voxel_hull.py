@@ -74,10 +74,15 @@ if __name__ == "__main__":
     output_folder = "./voxel_carving_results"
     voxel_file_path = os.path.join(output_folder,f"{scene_id}_voxel_carving.ply")
 
+
+    
+    mesh_folder = "./data_cubic_mesh"
+    mesh_file_path = os.path.join(mesh_folder, f"{scene_id}_cubic_mesh.ply")
     
     try:
         # Load voxel grid
-        voxel_grid = load_voxel(voxel_file_path)
+        voxel_grid = load_voxel(voxel_file_path) 
+        mesh_grid = load_voxel(mesh_file_path)
 
         # Analyze voxel grid
         voxel_size = analyze_voxel(voxel_grid)

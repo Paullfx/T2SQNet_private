@@ -45,7 +45,7 @@ def draw_3d_bbox(ax, bbox, label=None, color='blue'):
 
 # Define paths
 # exp_index = "scene_id_default"# "tableware_3_9" #blender_table_0_3 #"pybullet_single_BeerBottle" # "pybullet_table_1_2"
-exp_index = "pybullet_table_1_2"
+exp_index = "pybullet_single_HandlessCup"
 input_dir = f'./intermediates/{exp_index}/bboxes_cls'
 # results_dir = f'./intermediates/{exp_index}/results'
 gt_dir = f'./intermediates/{exp_index}/ground_truth'
@@ -194,7 +194,8 @@ colors = [cmap(i) for i in range(number_of_colors)]
 # Plot reconstructed point cloud data
 for i, obj in enumerate(points):
     x, y, z = obj[:, 0], obj[:, 1], obj[:, 2]
-    ax.scatter(x, y, z, color=colors[i], marker='.', label=f"reconstructed T2SQNet: {class_names[i]}", s=5)
+    ax.scatter(x, y, z, color= 'r', marker='.', label=f"reconstructed T2SQNet: {class_names[i]}", s=5)
+    #ax.scatter(x, y, z, color=colors[i], marker='.', label=f"reconstructed T2SQNet: {class_names[i]}", s=5)
 
 # Plot reconstructed object position   
 for i, pos in enumerate(positions):
@@ -203,7 +204,8 @@ for i, pos in enumerate(positions):
 # Plot gt point cloud data
 for i, obj in enumerate(points_gt):
     x, y, z = obj[:, 0], obj[:, 1], obj[:, 2]
-    ax.scatter(x, y, z, color=colors[i], marker='x', label=f"Ground truth T2SQNet: {class_names[i]}", s=5)
+    ax.scatter(x, y, z, color= 'b', marker='x', label=f"Ground truth T2SQNet: {class_names[i]}", s=5)
+    #ax.scatter(x, y, z, color=colors[i], marker='x', label=f"Ground truth T2SQNet: {class_names[i]}", s=5)
 
 # # Plot ground truth object position
 for i, pos_gt in enumerate(position_gt):

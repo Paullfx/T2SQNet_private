@@ -42,7 +42,7 @@ def draw_3d_bbox(ax, bbox, label=None, color='blue'):
 
 
 # Load bounding box data and results
-exp_index = "scene_id_default"# "tableware_3_9" #scene_id_default
+exp_index = "pybullet_single_HandlessCup"# "tableware_3_9" #scene_id_default
 input_dir = './intermediates/{exp_index}/bboxes_cls'
 bboxes_path = os.path.join(input_dir, 'bboxes.pkl')
 cls_path = os.path.join(input_dir, 'cls.pkl')

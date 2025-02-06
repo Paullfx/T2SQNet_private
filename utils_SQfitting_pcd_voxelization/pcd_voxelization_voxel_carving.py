@@ -143,7 +143,7 @@ def voxel_carving(mesh,
 
 ### load the data 
 
-scene_id = "tableware_6_1"
+scene_id = "tableware_5_12"
 
 mesh_folder = "./data_cubic_mesh"
 mesh_file_path = os.path.join(mesh_folder, f"{scene_id}_cubic_mesh.ply")
@@ -156,7 +156,7 @@ output_folder = "./voxel_carving_results"
 os.makedirs(output_folder, exist_ok=True)
 output_filename = os.path.join(output_folder,f"{scene_id}_voxel_carving.ply")
 
-camera_path = os.path.join(".", "sphere.ply")
+camera_path = os.path.join(".", "sphere2.ply") #sphere.ply
 visualization = True
 cubic_size = 2.0
 voxel_resolution = 128.0

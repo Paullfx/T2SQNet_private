@@ -2,10 +2,7 @@ wandb_project_name: Voxel_smooth
 data:
   training:
     dataset: voxel
-    roots: [datasets/Laptop7_voxelized] #[datasets/Laptop2_voxelized]
-    # /home/fuxiao/Projects/T2_private/published_tablewarenet_datasets/table_voxel-001/table_voxel/table_object_num_1_voxelized
-    # roots: [datasets/table_voxel/full_type_table_1_voxelized, datasets/table_voxel/full_type_table_2_voxelized]
-    # , datasets/table_voxel/full_type_table_3_voxelized, datasets/table_voxel/full_type_table_4_voxelized]
+    roots: [datasets/Laptop8_voxelized]
     split: training
     max_data_num: 999999
     batch_size: 32
@@ -14,9 +11,7 @@ data:
     preload : False
   validation:
     dataset: voxel
-    roots: [datasets/Laptop7_voxelized] #[datasets/Laptop2_voxelized]
-    # roots: [datasets/table_voxel/full_type_table_1_voxelized, datasets/table_voxel/full_type_table_2_voxelized]
-    # , datasets/table_voxel/full_type_table_3_voxelized, datasets/table_voxel/full_type_table_4_voxelized]
+    roots: [datasets/Laptop8_voxelized]
     split: validation
     max_data_num: 999999
     batch_size: 32

@@ -6,16 +6,18 @@
 python generate_tableware_pybullet.py \
 --data_path datasets \
 --folder_name test4 \
+--object_types 'Laptop' \
 --num_objects 1 \
---training_num 1 \
---validation_num 0 \
+--training_num 10 \
+--validation_num 5 \
 --test_num 0 \
---num_cameras 72 \
+--num_cameras 36 \
 --sim_type table \
---reduce_ratio 2 
+--reduce_ratio 2 \
+#--debug
 #--enable_gui
 #--debug
-# --object_types 'BeerBottle' \
+
 
 # # Render RGB images using Blender
 # $BLENDER_BIN $BLENDER_PROJ_PATH --background \
@@ -30,4 +32,4 @@ python generate_tableware_pybullet.py \
 # Voxelize Objects for Training ResNet3D
 python generate_tableware_voxelize.py \
 --folder_name datasets/test4 \
---debug
+#--debug

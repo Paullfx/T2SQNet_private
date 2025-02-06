@@ -8,6 +8,7 @@ import os
 import pickle
 import open3d as o3d
 from utils_SQfitting.visualize_voxel_from_objList2 import visualize_voxels_with_open3d
+from tablewarenet.tableware import *
 
 if __name__ == "__main__":
 
@@ -29,12 +30,14 @@ if __name__ == "__main__":
     )
 
     # prepare data input
-    object_idx = 4 #     "WineGlass" : 0, "Bowl" : 1, "Bottle" : 2, "BeerBottle" : 3,
+    object_class = "HandlessCup"
+    #object_idx = 4 #     "WineGlass" : 0, "Bowl" : 1, "Bottle" : 2, "BeerBottle" : 3,
     # "HandlessCup" : 4, "Mug" : 5, "Dish" : 6
+    object_idx = name_to_idx[object_class]
 
     device = torch.device('cuda:0')
 
-    # Load the voxel 
+####################################### Load the voxel and voxel scale from simulation
 
     # Define path flexibly with experiment index
     exp_index = "pybullet_single_HandlessCup"  # Example experiment index
@@ -48,7 +51,7 @@ if __name__ == "__main__":
     # the saved obj_list contains object_list(superquadric parameters) and voxel_info (results of voxel carving, including voxel and voxel_scale)
     voxel = obj_list[1][0]['voxel']
     visualize_voxels_with_open3d(obj_list[1], exp_index)
-
+    # tableware = obj_list[0] 
 
 
     # load voxel_size
@@ -61,9 +64,44 @@ if __name__ == "__main__":
     # # Approach 3: fix the voxel_scale to one specific tableware class
     # voxel_scale = torch.tensor([0.001832966443807953], device=device) # voxel_size from voxelize_config.yml
 
-    # param_predictor
+    # Extract the bbox from simulation
+
+    bbox_file_path = f'./intermediates/{exp_index}/bboxes_cls/bboxes.pkl'
+    with open(bbox_file_path, 'rb') as f:
+        bboxes = pickle.load(f)
+    bbox = bboxes[0] # default the first object
+
+
+
+
+    ################################ End of loading voxel from sim
+
+    ################################ Voxel from real data
+
+
+    ################################ End of loading voxel from real data
+
+    ################################ param_predictor
     obj_info = tsqnet.param_predictors[object_idx](voxel.unsqueeze(0), voxel_scale).squeeze()
     print (obj_info)
+
+    obj_list =[]
+
+    pose = torch.eye(4).to(device)
+    pose[0:3, 3] = obj_info[0:3] + bbox[0:3]# translation term, the bbox here is the true bbox
+    pose[2, 3] -= bbox[5]
+    angle = torch.atan2(obj_info[4], obj_info[3]) # aarctan (a/b)
+    pose[0, 0] = torch.cos(angle) # typical rotation matrix
+    pose[0, 1] = -torch.sin(angle)
+    pose[1, 0] = torch.sin(angle)
+    pose[1, 1] = torch.cos(angle)
+
+
+    # To do: a loop for several objects
+    obj = name_to_class[object_class](
+
+    )
+    ##########################store the inferred obj_info
 
 
     # # save the obj_info in ./intermediates/{exp_index}/obj_info/obj_info.pkl

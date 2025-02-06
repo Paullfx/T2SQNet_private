@@ -84,7 +84,7 @@ def process_file(
 		data_debug = dict()
 
 	# load data
-	mask_imgs = data["mask_imgs"][min_view_idx:max_view_idx+1]
+	mask_imgs = data["mask_imgs"][min_view_idx:max_view_idx+1] #choose the 7 camera views, min_view_idx = 15, max_view_idx = 21
 	camera = data["camera"][min_view_idx:max_view_idx+1]
 	objects_pose = data["objects_pose"]
 	objects_param = data["objects_param"]
@@ -92,7 +92,7 @@ def process_file(
 	objects_class = data["objects_class"]
 	camera_param_list = []
 	img_list = []
-	for cam, img in zip(camera, mask_imgs):
+	for cam, img in zip(camera, mask_imgs): #for each camera view
 		camera_params = o3d.camera.PinholeCameraParameters()	
 		camera_params.extrinsic = np.linalg.inv(
 			cam['camera_pose'])
@@ -119,7 +119,7 @@ def process_file(
 	# total voxel carving data
 	if debug:
 		length = 0.767 # a hard-coded value
-		voxel_grid_total = o3d.geometry.VoxelGrid.create_dense(
+		voxel_grid_total = o3d.geometry.VoxelGrid.create_dense( # dense voxel grid of size 0.767*0.767*0.767
 			origin=[
 				workspace_origin[0]-length/2, 
 				workspace_origin[1]-length/2, 
@@ -134,7 +134,7 @@ def process_file(
 		for img, params in zip(img_list, camera_param_list):
 			voxel_grid_total.carve_silhouette(img, params)
 
-		data_debug['voxel_grid_total'] = voxel_grid_total
+		data_debug['voxel_grid_total'] = voxel_grid_total # voxel hull for the whole scene including the table
 
 	# iterate for objects
 	for obj_idx in range(len(objects_pose)):
@@ -176,7 +176,7 @@ def process_file(
 			data_debug["marginal_bbox"] = deepcopy(marginal_bbox)
 
 		# # initialize voxel grid
-		voxel_grid_original = o3d.geometry.VoxelGrid.create_dense(
+		voxel_grid_original = o3d.geometry.VoxelGrid.create_dense( # size marginal bbox with 972k voxels
 			origin=marginal_bbox[0:3] - marginal_bbox[3:6],
 			color=[0.7,0.7,0.7],
 			voxel_size=voxel_size,
@@ -193,26 +193,27 @@ def process_file(
 		for img, params in zip(img_list, camera_param_list):
 			voxel_grid = deepcopy(voxel_grid_original)
 			voxel_grid.carve_silhouette(img, params, keep_voxels_outside_image=True)
-			voxels = voxel_grid.get_voxels()  # returns list of voxels
+			voxels = voxel_grid.get_voxels()  # returns list of voxels, after voxel carving (keep voxels outside image), 
+			# a o3d Voxelgrid with426k voxels, voxels is a list with len(voxels) = 426482, e.g. voxel[0] with grid_index:(119,89,89), color: (0.7,0.7,0.7)
 			try:
-				list_indices = list(vx.grid_index for vx in voxels)
+				list_indices = list(vx.grid_index for vx in voxels) #len(list_indices) = 426482, list_indices[0] = (119,89,89), int32
 			except:
 				print(filename)
-			indices = np.stack(list_indices)
-			indices_tensor = torch.from_numpy(indices).long()
+			indices = np.stack(list_indices) # array shape (426482,3)
+			indices_tensor = torch.from_numpy(indices).long() # tensor shape (426482,3)
 			vox = torch.zeros(w, h, d)
 			vox[
 				indices_tensor[:, 0], 
 				indices_tensor[:, 1], 
 				indices_tensor[:, 2]
 			] = 1
-			vox = vox.to(torch.bool)
+			vox = vox.to(torch.bool) # tensor shape (w,h,d) (120, 90,90), dtype bool
 			vox_stacked.append(vox)
-		vox_stacked = torch.stack(vox_stacked)
-		vox = vox_stacked
+		vox_stacked = torch.stack(vox_stacked) # resulting into a torch ([7,120,90,90])
+		vox = vox_stacked # list, each element tensor (w,h,d), dtype bool
 
 		if debug:
-			data_debug["voxel_grid"] = deepcopy(voxel_grid)
+			data_debug["voxel_grid"] = deepcopy(voxel_grid) #the "object voxel grid" shown in debug mode is actually the "voxel grid" here, (keep voxels outside image)
 
 		# max bounding box
 		w_min1 = math.floor(w * (marginal_bbox[3] - max_bbox[3]) / (2 * marginal_bbox[3]))
@@ -233,8 +234,8 @@ def process_file(
 		bound2 = [w_min2, w_max2, h_min2, h_max2, d_min2, d_max2]
 		if debug:
 			data_debug["vox"] = deepcopy(vox)
-			data_debug["bound1"] = deepcopy(bound1)
-			data_debug["bound2"] = deepcopy(bound2)
+			data_debug["bound1"] = deepcopy(bound1) # max bbox
+			data_debug["bound2"] = deepcopy(bound2) # object true bbox
 
 		# object info
 		object_pose[:3, 3] -= object_bbox[:3]

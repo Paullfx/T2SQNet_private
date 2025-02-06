@@ -1,0 +1,62 @@
+import os
+import shutil
+from pcd2grid import pcd2grid
+
+
+
+################# Block 1: voxelization #########################
+
+# copy the real pcd data extracted by ConceptGraph pipeline
+# creat a folder ./data_real, and copy paste the tableware_6_1_laptop_denposed.ply into the folder
+# Define the source and destination paths
+source_path = '/path/to/tableware_6_1_laptop_denposed.ply'
+destination_folder = './data_real'
+destination_path = os.path.join(destination_folder, 'tableware_6_1_laptop_denposed.ply')
+
+os.makedirs(destination_folder, exist_ok=True)
+shutil.copyfile(source_path, destination_path)
+print(f"point cloud copied to {destination_path}") # debug
+
+# voxelize the pcd
+# use the functions in ./utils_SQfitting_pcd_voxelization/pcd_voxelization_cubic_mesh.py
+    # input to the function: pc_path, voxel_size, voxel_save_path
+# load pcd_path
+# visualize pc_path
+voxel_grid = pcd2grid(pc, voxel_size)
+# save voxel_grid
+# visualize voxel grid
+
+voxel_mesh_grid = grid2meshgrid(voxel grid)
+# save the voxel_mesh_grid
+# visualize the voxel_mesh_grid
+
+################# Block 2: voxel carving #########################
+
+raw_voxel = voxel_carving (voxel_mesh_grid, voxel_scale)
+
+# visualize raw_voxel
+
+bbox = get_bbox(pc)
+
+max_bbox = get_max_bbox(bbox, max_box_size)
+
+marginal_bbox = get_marginal_bbox(bbox, marginal_box_size)
+
+inside_voxel = 
+
+# visualize inside_voxel
+
+input_voxel = stack [raw_voxel, inside_voxel]
+
+################### Block 3: inference with parameter prediction ######################
+
+# load cfg
+
+
+# instantiate TSQPipeline class
+
+obj_info = tsqnet.param_predictors[object_idx](voxel.unsqueeze(0), voxel_scale).squeeze()
+
+# reconstruct the laptop object using Tableware class
+
+# visualize the reconstructed object and the true pcd

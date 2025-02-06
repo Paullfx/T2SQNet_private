@@ -54,7 +54,7 @@ class VoxelLogger:
             self.log_wandb_instance(key, i)
                 
     def log_wandb_instance(self, key, i):
-        print(f"Logging {key} at step {i}, available keys: {list(self.items.keys())}")  # Debug
+        #print(f"Logging {key} at step {i}, available keys: {list(self.items.keys())}")  # Debug
         type = self.items[key]["type"]
         val = self.items[key]["value"]
         dict = self.items[key]
