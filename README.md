@@ -21,8 +21,14 @@ Young Hun Kim*,
 
 ## Running on LSY working staton (Fuxiao)
 - In LSY working station, conda venv T2, branch fuxiao-desktop for stage 1.1 (Running the pretrained T2 pipeline), branch fuxiao-fitting for stage 1.2  (Run the superquadric-fitting module fo T2 on the segmented point cloud from ConceptGraph pipeline)
-
-
+- 
+## Superquadric fitting with segmented point cloud from ConceptGraph pipeline(Fuxiao)
+- Pointcloud sampling
+  - mamba activate ros_cg, ros2 run sai_orbbec sai_publisher
+  - Then open another terminal. mamba activate ros_cg, change data save folder in ros_tableware.yml( Modify the "scene_id" in ros_tableware.yaml to e.g. "tableware_4_9"), cd conceptgraph/slam, python3 ros_rerun_sai_T2.py
+  - Data processing: firstly run fuxiao_open3d_tableware.py in /home/fuxiao/Projects/Orbbec/concept-graphs/conceptgraph/scripts/fuxiao_PC/drafts/fuxiao_open3d_tableware_test.py. This will generate a .ply file in 'concept-graphs/conceptgraph/dataset/external/{exp_id}/exps/exp/default' for the specific tableware e.g. "laptop". Remember to modify this specific tableware class to read the tableware from the point cloud accordingly.
+  - Secondly run tableware_process.py to denoise, this will  generate a "{exp_id}_bowl_denoised.ply" file. After experimenting, the parameters for denoise are setted "voxel_down_pcd.remove_radius_outlier(nb_points=200, radius=0.2)". 
+- Voxel carving to convert the pcd into voxels
 ## How to analyse the intermediate results of T2SQNet in simulation (Fuxiao)
 - Run the [control.py](http://control.py/) in debug mode. Add config file. Add a breakpoint before the control part of the section (e.g. line 289 in [controller.py](http://controller.py/))，more details will be added...
     - Detail of running debug mode. Modify the clear_clutter.yml or target_retrieval.yml by e.g. choosing the table scene or shelf scene and then run this script in debug mode (add args in debugger json file)
@@ -32,7 +38,7 @@ Young Hun Kim*,
     ```
     
     - add breakpoint, run
-- cd, run visualization command
+- cd, run visualization command  (outdated, the up-to-date file should be visualize_gt_bbox_pcd.py, I should add figure later)
     
     ```python
     # cd T2SQNet_private # the repo folder
@@ -82,11 +88,7 @@ Young Hun Kim*,
 - ./visualize_CG_T2_fuxiao.py is for plotting CG pcd, T2 pcd, and camera pose. ./visualize_only_bbox_pc.py is for plotting the bbox and the pcd of the fitted superquadrics. ./visualize_voxel_from_objList2.py for plotting the visual hull in form of voxels.
 ## Compare the visual hull voxel to the fitted superquadric point cloud (Fuxiao)
 
-## Superquadric fitting with segmented point cloud from ConceptGraph pipeline(Fuxiao)
-- Pointcloud sampling
-  - mamba activate ros_cg, ros2 run sai_orbbec sai_publisher
-  - Then open another terminal. mamba activate ros_cg, change data save folder in ros_tableware.yml( Modify the "scene_id" in ros_tableware.yaml to e.g. "tableware_4_9"), cd conceptgraph/slam, python3 ros_rerun_sai_T2.py
-  - Data processing: firstly run fuxiao_open3d_tableware.py in /home/fuxiao/Projects/Orbbec/concept-graphs/conceptgraph/scripts/fuxiao_PC/drafts/fuxiao_open3d_tableware_test.py. This will generate a .ply file in 'concept-graphs/conceptgraph/dataset/external/{exp_id}/exps/exp/default' for the specific tableware e.g. "cup". Remember to modify this specific object to read the tableware from the point cloud accordingly. Secondly run tableware_process.py to denoise, this will  generate a "{exp_id}_bowl_denoised.ply" file. After experimenting, the parameters for denoise are setted "voxel_down_pcd.remove_radius_outlier(nb_points=200, radius=0.2)". 
+
 ## Preview
 <I><b>Sequential Decluttering (Left):</b> T<sup>2</sup>SQNet-based method succeeds in sequentially grasping the objects without re-recognition, while avoiding collisions with other objects and the environment. </I>
 
