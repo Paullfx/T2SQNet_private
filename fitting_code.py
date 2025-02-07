@@ -30,7 +30,7 @@ if __name__ == "__main__":
     )
 
     # prepare data input
-    object_class = "HandlessCup"
+    object_class = "Bowl"
     #object_idx = 4 #     "WineGlass" : 0, "Bowl" : 1, "Bottle" : 2, "BeerBottle" : 3,
     # "HandlessCup" : 4, "Mug" : 5, "Dish" : 6
     object_idx = name_to_idx[object_class]
@@ -40,7 +40,7 @@ if __name__ == "__main__":
 ####################################### Load the voxel and voxel scale from simulation
 
     # Define path flexibly with experiment index
-    exp_index = "pybullet_single_HandlessCup"  # Example experiment index
+    exp_index = "pybullet_single_Bowl"  # "pybullet_single_BeerBottle" 
     file_path = f'./intermediates/{exp_index}/object_list/object_list.pkl'
     # Load the object list
     with open(file_path, 'rb') as f:
@@ -82,25 +82,27 @@ if __name__ == "__main__":
     ################################ End of loading voxel from real data
 
     ################################ param_predictor
+    print("voxel_scale: ", voxel_scale)
+    #print("voxel: ", voxel)
     obj_info = tsqnet.param_predictors[object_idx](voxel.unsqueeze(0), voxel_scale).squeeze()
     print (obj_info)
 
     obj_list =[]
 
-    pose = torch.eye(4).to(device)
-    pose[0:3, 3] = obj_info[0:3] + bbox[0:3]# translation term, the bbox here is the true bbox
-    pose[2, 3] -= bbox[5]
-    angle = torch.atan2(obj_info[4], obj_info[3]) # aarctan (a/b)
-    pose[0, 0] = torch.cos(angle) # typical rotation matrix
-    pose[0, 1] = -torch.sin(angle)
-    pose[1, 0] = torch.sin(angle)
-    pose[1, 1] = torch.cos(angle)
+    # pose = torch.eye(4).to(device)
+    # pose[0:3, 3] = obj_info[0:3] + bbox[0:3]# translation term, the bbox here is the true bbox
+    # pose[2, 3] -= bbox[5]
+    # angle = torch.atan2(obj_info[4], obj_info[3]) # aarctan (a/b)
+    # pose[0, 0] = torch.cos(angle) # typical rotation matrix
+    # pose[0, 1] = -torch.sin(angle)
+    # pose[1, 0] = torch.sin(angle)
+    # pose[1, 1] = torch.cos(angle)
 
 
-    # To do: a loop for several objects
-    obj = name_to_class[object_class](
+    # # To do: a loop for several objects
+    # obj = name_to_class[object_class]()
 
-    )
+    
     ##########################store the inferred obj_info
 
 

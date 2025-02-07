@@ -56,12 +56,17 @@ def visualize_voxels_with_open3d(voxel_list, exp_index):
 
                 # Print information
                 print(f"Visualizing voxel {i + 1}, from experiment {exp_index}, scale: {voxel_scale}")
+                origin_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=50.2)
                 
                 # print the tableware class
                 #table_class = 
                 # Visualize the first part in a separate window
-                o3d.visualization.draw_geometries([first_voxel_grid],
+                print(" The x, y, z axis are rendered as red, green, and blue arrows.")
+                print("fist_voxel_grid size:", first_voxel_grid.get_max_bound() - first_voxel_grid.get_min_bound())
+                print("first_voxel_center:", first_voxel_grid.get_center())
+                o3d.visualization.draw_geometries([first_voxel_grid, second_voxel_grid, origin_frame],
                                                   window_name=f'Voxel Hull {i + 1} - Part 1 - Experiment {exp_index} - Class')
+                
                 # Visualize the second part in a separate window
                 #o3d.visualization.draw_geometries([second_voxel_grid], window_name=f'Voxel Hull {i + 1} - Part 2 - Experiment {exp_index}')
             else:
@@ -70,18 +75,18 @@ def visualize_voxels_with_open3d(voxel_list, exp_index):
             print(f"Invalid voxel data, index: {i}, type: {type(voxel_dict)}")
 
 
-# Define the experiment index
-exp_index = "pybullet_single_HandlessCup"  # Example experiment index e.g. "blender_table_0_3" "scene_id_default" "pybullet_single_HandlessCup"
-file_path = f'./intermediates/{exp_index}/object_list/object_list.pkl'
+# # Define the experiment index
+# exp_index = "pybullet_single_HandlessCup"  # Example experiment index e.g. "blender_table_0_3" "scene_id_default" "pybullet_single_HandlessCup"
+# file_path = f'./intermediates/{exp_index}/object_list/object_list.pkl'
 
-# Load the object list
-with open(file_path, 'rb') as f:
-    obj_list = pickle.load(f)
+# # Load the object list
+# with open(file_path, 'rb') as f:
+#     obj_list = pickle.load(f)
 
-# print all the tabelware classes
-for i in range(len(obj_list[0])):
-    print (type(obj_list[0][i]))
+# # print all the tabelware classes
+# for i in range(len(obj_list[0])):
+#     print (type(obj_list[0][i]))
 
-# Call the function to visualize, 
-visualize_voxels_with_open3d(obj_list[1], exp_index)
+# # Call the function to visualize, 
+# visualize_voxels_with_open3d(obj_list[1], exp_index)
 

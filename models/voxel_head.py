@@ -168,6 +168,7 @@ class VoxelHead(nn.Module):
     
     def train_step(self, data, optimizer, device, *args, **kwargs):
         voxel = data["voxel"].to(device).float()
+        #print(f"voxel type: {type(voxel)}")
         voxel_scale = data["voxel_scale"].to(device).float()
         gt_pos = data["pos"].to(device).float()
         gt_ori = data["ori"].to(device).float()

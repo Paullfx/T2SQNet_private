@@ -181,12 +181,12 @@ class TSQPipeline():
 
 			# infer objects
 			t = time.time()
-			obj_list = self.infer_obj(bboxes, cls, imgs, camera_params) #true bbox, object[1][0] contains the voxel hulls
+			obj_list = self.infer_obj(bboxes, cls, imgs, camera_params) #1. the bbox here is the true bbox. 2. obj_list[0] contains a list of Tableware class instances and obj_list[1] contais voxel information
 			print(f'ellapsed time from bbox to object: {time.time() - t}')
 
 			# Define the save path
 			save_dir = './intermediates/scene_id_default/object_list'
-			os.makedirs(save_dir, exist_ok=True)  # Create the directory if it doesn't exist
+			os.makedirs(save_dir, exist_ok=True)  
 
 			# Save the object_list as a pickle file
 			save_path = os.path.join(save_dir, "object_list.pkl") # the voxel with size (Wimax /Li,Himax /Li,Dimax /Li)
