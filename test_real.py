@@ -31,6 +31,17 @@ voxel_mesh_grid = grid2meshgrid(voxel grid)
 # visualize the voxel_mesh_grid
 
 ################# Block 2: voxel carving #########################
+# Todo (draft on voxel_carving_vis.py)
+    # sphere.ply, r =1
+    # center_shift = pcd_center - [0,0,0]
+    # create dense (marginal, center = 0) # ref genrate_voxelized.py 179
+
+    # check training input center&shift #ref: notion test_real.py # ref:in def train_step of voxel_head.py, line 170
+
+# Good to have
+    # try replace mesh input with normal voxelization
+    # visualize and compare the mesh.vertical normal 
+
 
 raw_voxel = voxel_carving (voxel_mesh_grid, voxel_scale)
 
