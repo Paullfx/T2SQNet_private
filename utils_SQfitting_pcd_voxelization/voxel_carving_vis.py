@@ -73,7 +73,7 @@ def restore_voxel_grid(voxel_grid, center, scale):
 
 def voxel_carving(mesh, 
                   camera_path,
-                  cubic_size,
+                  marginal_bbox,
                   voxel_resolution,
                   w=300,
                   h=300,

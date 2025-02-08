@@ -32,7 +32,7 @@ voxel_mesh_grid = grid2meshgrid(voxel grid)
 
 ################# Block 2: voxel carving #########################
 # Todo (draft on voxel_carving_vis.py)
-    # sphere.ply, r =1
+        #   sphere.ply, r =1 # ref: generate_pybullet.py
     # center_shift = pcd_center - [0,0,0]
     # create dense (marginal, center = 0) # ref genrate_voxelized.py 179
 
@@ -41,17 +41,17 @@ voxel_mesh_grid = grid2meshgrid(voxel grid)
 # Good to have
     # try replace mesh input with normal voxelization
     # visualize and compare the mesh.vertical normal 
-
-
-raw_voxel = voxel_carving (voxel_mesh_grid, voxel_scale)
-
-# visualize raw_voxel
-
 bbox = get_bbox(pc)
 
 max_bbox = get_max_bbox(bbox, max_box_size)
 
 marginal_bbox = get_marginal_bbox(bbox, marginal_box_size)
+
+raw_voxel = voxel_carving (voxel_mesh_grid, voxel_scale, marginal_bbox)
+
+# visualize raw_voxel
+
+
 
 inside_voxel = 
 
