@@ -26,7 +26,7 @@ def read_pkl_keys(file_path):
 
 # Example usage:
 if __name__ == "__main__":
-    file_path = "/home/hamilton/Master_thesis/T2SQNet-public/datasets/test/test/0.pkl"  # Replace with your .pkl file path
+    file_path = "./datasets/test_laptop_voxelized/Laptop/training/0_0.pkl"  # Replace with your .pkl file path
     keys = read_pkl_keys(file_path)
     if keys:
         print("Keys in the pickle file:")

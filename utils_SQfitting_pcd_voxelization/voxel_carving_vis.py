@@ -32,17 +32,15 @@ def get_extrinsic(xyz):
     trans[:3, 3] = t
     return trans
 
-
 def preprocess(model):
     min_bound = model.get_min_bound()
     max_bound = model.get_max_bound()
     center = min_bound + (max_bound - min_bound) / 2.0
-    scale = np.linalg.norm(max_bound - min_bound) / 2.0 # 0.5* space diagonal
-    vertices = np.asarray(model.vertices) #verstices of the mesh
-    vertices -= center
-    model.vertices = o3d.utility.Vector3dVector(vertices / scale)
+    scale = np.linalg.norm(max_bound - min_bound) / 2.0 # 0.5* space diagonal of camera sphere
+    #vertices = np.asarray(model.vertices) #verstices of the mesh
+    #vertices -= center
+    #model.vertices = o3d.utility.Vector3dVector(vertices / scale)
     return model, center, scale
-
 
 def restore_voxel_grid(voxel_grid, center, scale):
     # Create a new VoxelGrid for the restored voxels
@@ -74,9 +72,9 @@ def restore_voxel_grid(voxel_grid, center, scale):
 def voxel_carving(mesh, 
                   camera_path,
                   marginal_bbox,
-                  voxel_resolution,
-                  w=300,
-                  h=300,
+                  voxel_size,
+                  w=640,
+                  h=480,
                   use_depth=True,
                   surface_method='pointcloud'):
     mesh.compute_vertex_normals()
@@ -84,13 +82,13 @@ def voxel_carving(mesh,
 
     # setup dense voxel grid
     voxel_carving = o3d.geometry.VoxelGrid.create_dense(
-        width=cubic_size,
-        height=cubic_size,
-        depth=cubic_size,
-        voxel_size=cubic_size / voxel_resolution,
-        origin=[-cubic_size / 2.0, -cubic_size / 2.0, -cubic_size / 2.0],
-        #origin=[0, 0, 0],
-        color=[1.0, 0.7, 0.0])
+        origin=[0,0,0], # because the pre-generated camera path is centered at the origin 
+        color=[0.7,0.7,0.7],
+        voxel_size=voxel_size,
+        width=marginal_bbox[3] * 2,
+        height=marginal_bbox[4] * 2,
+        depth=marginal_bbox[5] * 2,
+    )
 
     # rescale geometry and align the object (e.g. handleless cup) with the camera sphere
     camera_sphere,camera_center, camera_scale = preprocess(camera_sphere)
@@ -102,15 +100,14 @@ def voxel_carving(mesh,
     print("mesh_scale :", mesh_scale)
     camera_centers = np.zeros((len(camera_sphere.vertices), 3))
 
-    # # Visualize the camera poses
+     # # Visualize the camera poses
     # camera_pcd = o3d.geometry.PointCloud()
     # camera_pcd.points = o3d.utility.Vector3dVector(camera_centers)
-
 
     # setup visualizer to render depthmaps
     vis = o3d.visualization.Visualizer()
     vis.create_window(width=w, height=h, visible=False) # set visible to False if you don't want to see the rendering
-    vis.add_geometry(mesh)
+    vis.add_geometry(mesh) # shift mesh to origin
     #vis.add_geometry(camera_pcd) # only for visualization purpose
     vis.get_render_option().mesh_show_back_face = True
     ctr = vis.get_view_control()
@@ -156,28 +153,27 @@ def voxel_carving(mesh,
     # print(f"Saving voxel_carving to {output_filename}")
     # o3d.io.write_voxel_grid(output_filename, voxel_carving)
 
-
     # add voxel grid survace
     print('Surface voxel grid from %s' % surface_method)
     if surface_method == 'pointcloud':
         voxel_surface = o3d.geometry.VoxelGrid.create_from_point_cloud_within_bounds(
             pcd_agg,
-            voxel_size=cubic_size / voxel_resolution,
-            min_bound=(-cubic_size / 2, -cubic_size / 2, -cubic_size / 2),
-            max_bound=(cubic_size / 2, cubic_size / 2, cubic_size / 2))
+            voxel_size=voxel_size,
+            min_bound=(-marginal_bbox[3], -marginal_bbox[4], -marginal_bbox[5]),
+            max_bound=(marginal_bbox[3], marginal_bbox[4], marginal_bbox[5]))
     elif surface_method == 'mesh':
         voxel_surface = o3d.geometry.VoxelGrid.create_from_triangle_mesh_within_bounds(
             mesh,
-            voxel_size=cubic_size / voxel_resolution,
-            min_bound=(-cubic_size / 2, -cubic_size / 2, -cubic_size / 2),
-            max_bound=(cubic_size / 2, cubic_size / 2, cubic_size / 2))
+            voxel_size=voxel_size,
+            min_bound=(-marginal_bbox[3], -marginal_bbox[4], -marginal_bbox[5]),
+            max_bound=(marginal_bbox[3], marginal_bbox[4], marginal_bbox[5]))
     else:
         raise Exception('invalid surface method')
     voxel_carving_surface = voxel_surface + voxel_carving
     print("Original dense voxel hull size:", voxel_carving.get_max_bound() - voxel_carving.get_min_bound())
-    voxel_carving_surface = restore_voxel_grid(voxel_carving_surface, mesh_center, mesh_scale)
-    voxel_carving = restore_voxel_grid(voxel_carving, mesh_center, mesh_scale)
-    voxel_surface = restore_voxel_grid(voxel_surface, mesh_center, mesh_scale)
+    # voxel_carving_surface = restore_voxel_grid(voxel_carving_surface, mesh_center, mesh_scale)
+    # voxel_carving = restore_voxel_grid(voxel_carving, mesh_center, mesh_scale)
+    # voxel_surface = restore_voxel_grid(voxel_surface, mesh_center, mesh_scale)
     
     print("Restored dense voxel carving size:", voxel_carving.get_max_bound() - voxel_carving.get_min_bound())
     print("Restored dense voxel carving + surface size:", voxel_carving_surface.get_max_bound() - voxel_carving_surface.get_min_bound())
@@ -185,8 +181,6 @@ def voxel_carving(mesh,
     xyz_max = voxel_carving_surface.get_max_bound()
     bbox =[0.5*(xyz_min[0]+xyz_max[0]),0.5*(xyz_min[1]+xyz_max[1]),0.5*(xyz_min[2]+xyz_max[2]),0.5 *(xyz_max[0]-xyz_min[0]),0.5*(xyz_max[1]-xyz_min[1]),0.5*(xyz_max[2]-xyz_min[2])]
     print(bbox)
-
-
 
     return voxel_carving_surface, voxel_carving, voxel_surface, bbox
 
@@ -209,19 +203,21 @@ o3d.visualization.draw_geometries([mesh,origin_frame])
 output_folder = "./results_voxel_carving"
 scene_subfolder = os.path.join(output_folder, scene_id)
 os.makedirs(scene_subfolder, exist_ok=True)
-voxel_grid_filename = os.path.join(scene_subfolder, f"{scene_id}_voxel_grid.ply")
+voxel_grid_filename = os.path.join(scene_subfolder, f"{scene_id}_voxel_grid_2.ply")
 voxel_carving_filename = os.path.join(scene_subfolder, f"{scene_id}_voxel_carving.ply")
 voxel_surface_filename = os.path.join(scene_subfolder, f"{scene_id}_voxel_surface.ply")
 
 camera_path = os.path.join(".", "sphere.ply") #sphere.ply
 visualization = True
-cubic_size = 2.0
-voxel_resolution = 128.0
+#cubic_size = 2.0
+#voxel_resolution = 128.0
 
+bbox = 
 
 ### run the voxel carving method ###
 voxel_grid, voxel_carving, voxel_surface,bbox = voxel_carving(
-    mesh, camera_path, cubic_size, voxel_resolution)
+    mesh, camera_path, marginal_bbox, voxel_size)
+
 
 # store the voxel grid 
 o3d.io.write_voxel_grid(voxel_grid_filename, voxel_grid)

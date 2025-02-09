@@ -220,7 +220,7 @@ def process_file(
 			] = 1
 			vox = vox.to(torch.bool) # tensor shape (w,h,d) (120, 90,90), dtype bool
 			vox_stacked.append(vox)
-		vox_stacked = torch.stack(vox_stacked) # resulting into a torch ([7,120,90,90])
+		vox_stacked = torch.stack(vox_stacked) # turning the list into a torch ([7,120,90,90])
 		vox = vox_stacked # list, each element tensor (w,h,d), dtype bool
 
 		if debug:

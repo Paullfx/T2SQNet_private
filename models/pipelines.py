@@ -436,10 +436,10 @@ class TSQPipeline():
 			obj_info = self.param_predictors[object_idx](voxel.unsqueeze(0), voxel_scale).squeeze()# voxelhead with resnet3d as backbone and FCvec as heads
 			# print(f'param_predictors elapsed time: {time.time() - t}')
 			pose = torch.eye(4).to(self.device)
-			pose[0:3, 3] = obj_info[0:3] + bbox[0:3]# translation term
+			pose[0:3, 3] = obj_info[0:3] + bbox[0:3]# translation according to the bbox position
 			pose[2, 3] -= bbox[5]
-			angle = torch.atan2(obj_info[4], obj_info[3]) # aarctan (a/b)
-			pose[0, 0] = torch.cos(angle) # typical rotation matrix
+			angle = torch.atan2(obj_info[4], obj_info[3]) # aarctan (a/b), for z axis roation angle
+			pose[0, 0] = torch.cos(angle) # rotation matrix around z axis
 			pose[0, 1] = -torch.sin(angle)
 			pose[1, 0] = torch.sin(angle)
 			pose[1, 1] = torch.cos(angle)
