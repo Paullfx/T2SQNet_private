@@ -18,7 +18,7 @@ set_start_method('spawn', force=True)
 from functools import partial
 
 from utils.debugging_windows import debugging_windows_voxelize
-
+from utils_SQfitting.bbox2o3d import bbox2o3d
 def handler(signalnum, frame):
 	raise TypeError
 
@@ -169,6 +169,17 @@ def process_file(
 				marginal_bbox_size), 
 			axis=0
 		)
+
+		###### fuxiao: bbox only for analysis purpose, no need in real data generation process
+		marginal_bbox_o3d = bbox2o3d(marginal_bbox)
+		marginal_bbox_o3d.color = (1, 0, 0)  # red
+
+		max_bbox_o3d = bbox2o3d(max_bbox)
+		max_bbox_o3d.color = (0, 1, 0)  # green
+
+		object_bbox_o3d = bbox2o3d(object_bbox)
+		object_bbox_o3d.color = (0, 0, 1)  # blu
+
 		if debug:
 			data_debug["voxel_size"] = deepcopy(voxel_size)
 			data_debug["object_bbox"] = deepcopy(object_bbox)
@@ -192,7 +203,7 @@ def process_file(
 		vox_stacked = []
 		for img, params in zip(img_list, camera_param_list):
 			voxel_grid = deepcopy(voxel_grid_original)
-			voxel_grid.carve_silhouette(img, params, keep_voxels_outside_image=True)
+			voxel_grid.carve_silhouette(img, params, keep_voxels_outside_image=True)			
 			voxels = voxel_grid.get_voxels()  # returns list of voxels, after voxel carving (keep voxels outside image), 
 			# a o3d Voxelgrid with426k voxels, voxels is a list with len(voxels) = 426482, e.g. voxel[0] with grid_index:(119,89,89), color: (0.7,0.7,0.7)
 			try:

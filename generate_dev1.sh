@@ -10,7 +10,7 @@ python generate_tableware_pybullet.py \
 --num_objects 1 \
 --training_num 1 \
 --validation_num 1 \
---test_num 0 \
+--test_num 1 \
 --num_cameras 36 \
 --sim_type table \
 --reduce_ratio 2 \
@@ -29,7 +29,7 @@ python generate_tableware_pybullet.py \
 # ---split_list training validation test \
 # ---max_data_num 1 0 0
 
-# # Voxelize Objects for Training ResNet3D
-# python generate_tableware_voxelize.py \
-# --folder_name datasets/test5 \
-# #--debug
+# Voxelize Objects for Training ResNet3D
+python generate_tableware_voxelize.py \
+--folder_name datasets/test_laptop \
+#--debug
