@@ -2,15 +2,15 @@ base_yml: configs/voxel_head/voxel_base.yml
 data:
   training:
     class_name: Laptop
-    voxel_trans_noise_max: 4
-    voxel_size_noise_max: [2, 2, 2]
+    voxel_trans_noise_max: 10 #10 #4
+    voxel_size_noise_max: [5, 5, 3] #[5, 5, 3] #[2, 2, 2]
   validation:
     class_name: Laptop
-    voxel_trans_noise_max: 4
-    voxel_size_noise_max: [2, 2, 2]
+    voxel_trans_noise_max: 10 #10 4
+    voxel_size_noise_max: [5, 5, 3] #[5, 5, 3] #[2, 2, 2]
 model:
   param_head:
-    in_chan: 757
+    in_chan: 757 #
     out_chan: 5 # dim of params
   pos_head:
     in_chan: 757

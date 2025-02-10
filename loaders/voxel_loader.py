@@ -139,34 +139,34 @@ class VoxelDataset(Dataset):
             
         if len(raw_voxel.shape) == 4:
             raw_voxel = raw_voxel.float().mean(dim=0)
-        raw_voxel = raw_voxel.float()
+        raw_voxel = raw_voxel.float() #raw_voxel.sum().item() = 417.5k, 135*135*70 = 1275k
         
         w_min1, w_max1, h_min1, h_max1, d_min1, d_max1 = bound1
         w_min2, w_max2, h_min2, h_max2, d_min2, d_max2 = bound2
 
-        trans_noise_x = torch.randint(low=-self.voxel_trans_noise_max, high=self.voxel_trans_noise_max+1, size=[])
+        trans_noise_x = torch.randint(low=-self.voxel_trans_noise_max, high=self.voxel_trans_noise_max+1, size=[]) # [-4,+4]
         trans_noise_y = torch.randint(low=-self.voxel_trans_noise_max, high=self.voxel_trans_noise_max+1, size=[])
-        size_noise_x = torch.randint(low=-self.voxel_size_noise_max[0], high=self.voxel_size_noise_max[0]+1, size=[])
+        size_noise_x = torch.randint(low=-self.voxel_size_noise_max[0], high=self.voxel_size_noise_max[0]+1, size=[]) #[-2,+3]
         size_noise_y = torch.randint(low=-self.voxel_size_noise_max[1], high=self.voxel_size_noise_max[1]+1, size=[])
         size_noise_z = torch.randint(low=-self.voxel_size_noise_max[2], high=self.voxel_size_noise_max[2]+1, size=[])
         bbox_pos_trans = self.voxel_size * torch.tensor([trans_noise_x, trans_noise_y, size_noise_z/2])
 
-        w_min2 += trans_noise_x - size_noise_x
+        w_min2 += trans_noise_x - size_noise_x # for bound2 which represent the max bbox, add position noise and size noise
         w_max2 += trans_noise_x + size_noise_x
         h_min2 += trans_noise_y - size_noise_y
         h_max2 += trans_noise_y + size_noise_y
         d_max2 += trans_noise_y + size_noise_z
 
-        w_min1 += trans_noise_x
+        w_min1 += trans_noise_x # for bound1 which rpresents the true bbox (axis aligned bbox), only add position noise, no size noise
         w_max1 += trans_noise_x
         h_min1 += trans_noise_y
         h_max1 += trans_noise_y
 
-        inside_voxel = torch.zeros_like(raw_voxel).fill_(0.)
-        inside_voxel[w_min2:w_max2, h_min2:h_max2, d_min2:d_max2] = 1.
+        inside_voxel = torch.zeros_like(raw_voxel).fill_(0.) #135*135*70 = 1275k
+        inside_voxel[w_min2:w_max2, h_min2:h_max2, d_min2:d_max2] = 1. #300k, 23.58% occupied
 
-        voxel = torch.stack([raw_voxel, inside_voxel])
-        voxel = voxel[:, w_min1:w_max1, h_min1:h_max1, d_min1:d_max1]
+        voxel = torch.stack([raw_voxel, inside_voxel]) # 2*135*135*70
+        voxel = voxel[:, w_min1:w_max1, h_min1:h_max1, d_min1:d_max1] # [109,109,69]
         
         pos[0:2] -= bbox_pos_trans[0:2]
         diff_pc[...,0:2] -= bbox_pos_trans[0:2]

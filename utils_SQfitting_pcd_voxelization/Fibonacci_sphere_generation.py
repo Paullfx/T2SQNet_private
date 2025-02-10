@@ -17,9 +17,10 @@ def generate_fibonacci_sphere(num_points):
     lat = np.arcsin(2 * indices / (2 * N + 1))
     lon = 2 * np.pi * indices / phi
 
-    x = np.cos(lat) * np.cos(lon)
-    y = np.cos(lat) * np.sin(lon)
-    z = np.sin(lat)
+    R = 2
+    x = R*np.cos(lat) * np.cos(lon)
+    y = R*np.cos(lat) * np.sin(lon)
+    z = R*np.sin(lat)
 
     points = np.vstack((x, y, z)).T
 
@@ -39,11 +40,11 @@ o3d.visualization.draw_geometries([sphere_pcd], window_name="Fibonacci Sphere")
 
 # Parameters
 num_views = 642  # Total number of views
-output_file = "./utils_SQfitting_pcd_voxelization/sphere3.ply"  # Output file name
-
+output_file = "./sphere2.ply"  # Output file name
+o3d.io.write_point_cloud(output_file, sphere_pcd)
 # Generate the sphere and save it as a PLY file
-sphere_mesh = generate_fibonacci_sphere(num_views)
-o3d.io.write_point_cloud(output_file, sphere_mesh)
-o3d.visualization.draw_geometries([sphere_mesh], window_name="Fibonacci Sphere")
+#sphere_mesh = generate_fibonacci_sphere(num_views)
+#o3d.io.write_point_cloud(output_file, sphere_mesh)
+#o3d.visualization.draw_geometries([sphere_mesh], window_name="Fibonacci Sphere")
 
 print(f"Sphere mesh with {num_views} vertices saved to {output_file}")

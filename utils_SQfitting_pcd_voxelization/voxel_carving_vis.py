@@ -1,6 +1,8 @@
 import open3d as o3d
 import numpy as np
 import os
+import torch
+from omegaconf import OmegaConf
 
 # Reference: https://www.open3d.org/docs/latest/tutorial/Advanced/voxelization.html
 
@@ -37,10 +39,29 @@ def preprocess(model):
     max_bound = model.get_max_bound()
     center = min_bound + (max_bound - min_bound) / 2.0
     scale = np.linalg.norm(max_bound - min_bound) / 2.0 # 0.5* space diagonal of camera sphere
-    #vertices = np.asarray(model.vertices) #verstices of the mesh
-    #vertices -= center
+    
+    vertices = np.asarray(model.vertices) #verstices of the mesh
+    vertices -= center
+    model.vertices = o3d.utility.Vector3dVector(vertices)
     #model.vertices = o3d.utility.Vector3dVector(vertices / scale)
     return model, center, scale
+
+def get_bbox(model):
+    min_bound = model.get_min_bound()
+    max_bound = model.get_max_bound()
+    center = min_bound + (max_bound - min_bound) / 2.0
+    bbox = [center[0], center[1], center[2], (max_bound[0] - min_bound[0])/2, (max_bound[1] - min_bound[1])/2, (max_bound[2] - min_bound[2])/2]
+    return bbox
+
+def bbox2marginal(bbox, marginal_bbox_size):
+    marginal_bbox = np.concatenate(
+			(
+				bbox[0:2], 
+				np.array([bbox[2] - bbox[5] + marginal_bbox_size[2]]),
+				marginal_bbox_size), 
+			axis=0
+		)
+    return marginal_bbox
 
 def restore_voxel_grid(voxel_grid, center, scale):
     # Create a new VoxelGrid for the restored voxels
@@ -73,8 +94,8 @@ def voxel_carving(mesh,
                   camera_path,
                   marginal_bbox,
                   voxel_size,
-                  w=640,
-                  h=480,
+                  w=320,
+                  h=240,
                   use_depth=True,
                   surface_method='pointcloud'):
     mesh.compute_vertex_normals()
@@ -82,7 +103,7 @@ def voxel_carving(mesh,
 
     # setup dense voxel grid
     voxel_carving = o3d.geometry.VoxelGrid.create_dense(
-        origin=[0,0,0], # because the pre-generated camera path is centered at the origin 
+        origin=[-marginal_bbox[3],-marginal_bbox[4],-marginal_bbox[5]], # because the pre-generated camera path is centered at the origin 
         color=[0.7,0.7,0.7],
         voxel_size=voxel_size,
         width=marginal_bbox[3] * 2,
@@ -92,12 +113,12 @@ def voxel_carving(mesh,
 
     # rescale geometry and align the object (e.g. handleless cup) with the camera sphere
     camera_sphere,camera_center, camera_scale = preprocess(camera_sphere)
-    print("camera_center :", camera_center)
-    print("camera_scale :", camera_scale)
-    print("Original mesh size:", mesh.get_max_bound() - mesh.get_min_bound())
+    #print("camera_center :", camera_center)
+    # #print("camera_scale :", camera_scale)
+    #print("Original mesh size:", mesh.get_max_bound() - mesh.get_min_bound())
     mesh, mesh_center, mesh_scale = preprocess(mesh)
-    print("mesh_center :", mesh_center)
-    print("mesh_scale :", mesh_scale)
+    # print("mesh_center :", mesh_center)
+    # print("mesh_scale :", mesh_scale)
     camera_centers = np.zeros((len(camera_sphere.vertices), 3))
 
      # # Visualize the camera poses
@@ -171,9 +192,9 @@ def voxel_carving(mesh,
         raise Exception('invalid surface method')
     voxel_carving_surface = voxel_surface + voxel_carving
     print("Original dense voxel hull size:", voxel_carving.get_max_bound() - voxel_carving.get_min_bound())
-    # voxel_carving_surface = restore_voxel_grid(voxel_carving_surface, mesh_center, mesh_scale)
-    # voxel_carving = restore_voxel_grid(voxel_carving, mesh_center, mesh_scale)
-    # voxel_surface = restore_voxel_grid(voxel_surface, mesh_center, mesh_scale)
+    voxel_carving_surface = restore_voxel_grid(voxel_carving_surface, mesh_center, mesh_scale)
+    voxel_carving = restore_voxel_grid(voxel_carving, mesh_center, mesh_scale)
+    voxel_surface = restore_voxel_grid(voxel_surface, mesh_center, mesh_scale)
     
     print("Restored dense voxel carving size:", voxel_carving.get_max_bound() - voxel_carving.get_min_bound())
     print("Restored dense voxel carving + surface size:", voxel_carving_surface.get_max_bound() - voxel_carving_surface.get_min_bound())
@@ -184,60 +205,75 @@ def voxel_carving(mesh,
 
     return voxel_carving_surface, voxel_carving, voxel_surface, bbox
 
-### load the data 
+if __name__ == "__main__":
+    ### load the data 
 
-scene_id = "tableware_6_1"
-
-mesh_folder = "./data_cubic_mesh"
-mesh_file_path = os.path.join(mesh_folder, f"{scene_id}_cubic_mesh.ply")
-mesh = o3d.io.read_triangle_mesh(mesh_file_path)
-#add a print statement to check the mesh
-print(mesh)
-
-origin_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.2)
-print(" The x, y, z axis are rendered as red, green, and blue arrows.")
-o3d.visualization.draw_geometries([mesh,origin_frame])
-
-#o3d.visualization.draw_geometries([mesh])
-
-output_folder = "./results_voxel_carving"
-scene_subfolder = os.path.join(output_folder, scene_id)
-os.makedirs(scene_subfolder, exist_ok=True)
-voxel_grid_filename = os.path.join(scene_subfolder, f"{scene_id}_voxel_grid_2.ply")
-voxel_carving_filename = os.path.join(scene_subfolder, f"{scene_id}_voxel_carving.ply")
-voxel_surface_filename = os.path.join(scene_subfolder, f"{scene_id}_voxel_surface.ply")
-
-camera_path = os.path.join(".", "sphere.ply") #sphere.ply
-visualization = True
-#cubic_size = 2.0
-#voxel_resolution = 128.0
-
-bbox = 
-
-### run the voxel carving method ###
-voxel_grid, voxel_carving, voxel_surface,bbox = voxel_carving(
-    mesh, camera_path, marginal_bbox, voxel_size)
+    scene_id = "tableware_6_1"
+    object_class = "Laptop"
 
 
-# store the voxel grid 
-o3d.io.write_voxel_grid(voxel_grid_filename, voxel_grid)
-o3d.io.write_voxel_grid(voxel_carving_filename, voxel_carving)
-o3d.io.write_voxel_grid(voxel_surface_filename, voxel_surface)
+    mesh_folder = "./data_cubic_mesh"
+    mesh_file_path = os.path.join(mesh_folder, f"{scene_id}_cubic_mesh.ply")
+    mesh = o3d.io.read_triangle_mesh(mesh_file_path)
+    #add a print statement to check the mesh
+    print(mesh)
+    origin_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.2)
+    print(" The x, y, z axis are rendered as red, green, and blue arrows.")
+    o3d.visualization.draw_geometries([mesh,origin_frame])
 
-print(f"Voxel grids saved to {scene_subfolder}")
+    output_folder = "./results_voxel_carving"
+    scene_subfolder = os.path.join(output_folder, scene_id)
+    os.makedirs(scene_subfolder, exist_ok=True)
+    voxel_grid_filename = os.path.join(scene_subfolder, f"{scene_id}_voxel_grid_2.ply")
+    voxel_carving_filename = os.path.join(scene_subfolder, f"{scene_id}_voxel_carving_2.ply")
+    voxel_surface_filename = os.path.join(scene_subfolder, f"{scene_id}_voxel_surface_2.ply")
 
-### visualize the results ###
-print("surface voxels")
-print(voxel_surface)
-#o3d.visualization.draw_geometries([voxel_surface])
-o3d.visualization.draw_geometries([voxel_surface,origin_frame])
+    camera_path = os.path.join(".", "sphere2.ply") #sphere.ply
+    visualization = True
+    #cubic_size = 2.0
+    #voxel_resolution = 128.0
 
-print("carved voxels")
-print(voxel_carving)
-#o3d.visualization.draw_geometries([voxel_carving])
-o3d.visualization.draw_geometries([voxel_carving,origin_frame])
+    ######################### yml config load, bbox ##########
 
-print("combined voxels (carved + surface)")
-print(voxel_grid)
-#o3d.visualization.draw_geometries([voxel_grid])
-o3d.visualization.draw_geometries([voxel_grid,origin_frame])
+    bbox = get_bbox(mesh)
+
+    yml_path = os.path.join('configs', 'voxelize_config.yml')
+    dataset_args = OmegaConf.load(yml_path)
+    marginal_bbox_size_dict = dataset_args.marginal_bbox_size
+    max_bbox_size_dict = dataset_args.max_bbox_size
+    voxel_size_dict = dataset_args.voxel_size
+
+    marginal_bbox_size = torch.tensor(marginal_bbox_size_dict[object_class])
+    max_bbox_size = torch.tensor(max_bbox_size_dict[object_class])
+    voxel_size = voxel_size_dict[object_class]
+
+    bbox = get_bbox(mesh)
+    marginal_bbox = bbox2marginal(bbox, marginal_bbox_size)
+
+    ### run the voxel carving method ###
+    voxel_grid, voxel_carving, voxel_surface,bbox = voxel_carving(
+        mesh, camera_path, marginal_bbox, voxel_size)
+
+
+    # store the voxel grid 
+    o3d.io.write_voxel_grid(voxel_grid_filename, voxel_grid)
+    o3d.io.write_voxel_grid(voxel_carving_filename, voxel_carving)
+    o3d.io.write_voxel_grid(voxel_surface_filename, voxel_surface)
+
+    print(f"Voxel grids saved to {scene_subfolder}")
+
+    ### visualize the results ###
+    print("surface voxels")
+    print(voxel_surface)
+    #o3d.visualization.draw_geometries([voxel_surface])
+    o3d.visualization.draw_geometries([voxel_surface,origin_frame])
+
+    print("carved voxels")
+    print(voxel_carving)
+    #o3d.visualization.draw_geometries([voxel_carving])
+    o3d.visualization.draw_geometries([voxel_carving,origin_frame])
+
+    print("combined voxels (carved + surface)")
+    print(voxel_grid)
+    #o3d.visualization.draw_geometries([voxel_grid])
+    o3d.visualization.draw_geometries([voxel_grid,origin_frame])

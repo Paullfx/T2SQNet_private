@@ -43,36 +43,8 @@ def preprocess(model):
     model.vertices = o3d.utility.Vector3dVector(vertices / scale)
     return model, center, scale
 
-# def restore_voxel_grid(voxel_grid, center, scale):
-    
-#     restored_voxel_grid = o3d.geometry.VoxelGrid()
-#     print("voxel_grid.voxel_size:", voxel_grid.voxel_size)
-#     restored_voxel_grid.voxel_size = voxel_grid.voxel_size * scale  # restore voxel size
-#     print("restored_voxel_grid.voxel_size:", restored_voxel_grid.voxel_size)
-#     restored_voxels = []
-#     print("total voxel number of voxel hull:", len(voxel_grid.get_voxels()))
-#     for voxel in voxel_grid.get_voxels():
-#         #print("voxel.grid_index:", voxel.grid_index)
-#         voxel_index = np.array(voxel.grid_index, dtype=float)
-#         #print("voxel_index:", voxel_index)
 
-#         # compute the voxel center of every voxel in restored grid
-#         voxel_center = voxel_index * voxel_grid.voxel_size 
-#         voxel_center = voxel_center * scale  
-#         voxel_center += center 
-#         print("voxel_center:", voxel_center)
-#         restored_voxels.append(o3d.geometry.Voxel(voxel_center, voxel.color))
-
-    
-#     print("length of restored voxel list:", len(restored_voxels))
-#     restored_voxel_grid.origin = center 
-#     for voxel in restored_voxels:
-#         #print("voxel:", voxel)
-#         restored_voxel_grid.add_voxel(voxel)
-
-#     return restored_voxel_grid
-
-def restore_voxel_grid(voxel_grid, center, scale):
+def restore_voxel_grid(voxel_grid, center, scale): #newest
     # Create a new VoxelGrid for the restored voxels
     restored_voxel_grid = o3d.geometry.VoxelGrid()
     restored_voxel_grid.voxel_size = voxel_grid.voxel_size * scale  # Restore voxel size
@@ -101,51 +73,6 @@ def restore_voxel_grid(voxel_grid, center, scale):
 
 
 
-
-
-# def restore_voxel_grid(voxel_grid, center, scale):
-#     transformed_voxels = []
-
-#     for voxel in voxel_grid.get_voxels():
-#         # Convert voxel center to original scale and position
-#         voxel.grid_index = voxel.grid_index * scale + center
-#         transformed_voxels.append(voxel)
-
-#     return voxel_grid
-
-# def restore_voxel_grid(voxel_grid, center, scale):
-#     # Extract voxel centers and restore them to original coordinates
-#     restored_voxels = []
-    
-#     for voxel in voxel_grid.get_voxels():
-#         # Convert voxel center from normalized space back to original
-#         voxel_center = np.array(voxel.grid_index, dtype=float) * (2.0 / voxel_grid.voxel_size)  # Convert indices to coordinates
-#         voxel_center = voxel_center * scale + center  # Scale and translate back
-
-#         # Create a new voxel with restored coordinates
-#         restored_voxels.append(o3d.geometry.Voxel(voxel_center, voxel.color))
-
-#     # Create a new voxel grid with restored positions
-#     restored_voxel_grid = o3d.geometry.VoxelGrid()
-#     restored_voxel_grid.voxel_size = voxel_grid.voxel_size * scale  # Restore original voxel size
-#     restored_voxel_grid.origin = center - (voxel_grid.origin * scale)  # Restore origin
-#     for voxel in restored_voxels:
-#         restored_voxel_grid.add_voxel(voxel)
-
-#     return restored_voxel_grid
-
-
-# def camera_sphere_preprocess(model):
-#     min_bound = model.get_min_bound()
-#     max_bound = model.get_max_bound()
-#     center = min_bound + (max_bound - min_bound) / 2.0
-#     scale = np.linalg.norm(max_bound - min_bound) / 2.0 # 0.5* space diagonal
-#     vertices = np.asarray(model.vertices) #verstices of the mesh
-#     vertices -= center
-#     vertices *= 3.0 # make the camera sphere several times larger than the object mesh
-#     model.vertices = o3d.utility.Vector3dVector(vertices / scale)
-#     return model
-
 # voxel carving method
 def voxel_carving(mesh,
                   camera_path,
@@ -172,6 +99,7 @@ def voxel_carving(mesh,
     camera_sphere,camera_center, camera_scale = preprocess(camera_sphere)
     print("camera_center :", camera_center)
     print("camera_scale :", camera_scale)
+    print("number of camera sphere vertices:", len(camera_sphere.vertices))
     print("Original mesh size:", mesh.get_max_bound() - mesh.get_min_bound())
     mesh, mesh_center, mesh_scale = preprocess(mesh)
     print("mesh_center :", mesh_center)
@@ -185,7 +113,7 @@ def voxel_carving(mesh,
 
     # setup visualizer to render depthmaps
     vis = o3d.visualization.Visualizer()
-    vis.create_window(width=w, height=h, visible=False) # set visible to False if you don't want to see the rendering
+    vis.create_window(width=w, height=h, visible=True) # set visible to False if you don't want to see the rendering
     vis.add_geometry(mesh)
     #vis.add_geometry(camera_pcd) # only for visualization purpose
     vis.get_render_option().mesh_show_back_face = True
@@ -268,7 +196,7 @@ def voxel_carving(mesh,
 
 ### load the data 
 
-scene_id = "tableware_6_1"
+scene_id = "tableware_5_12"
 
 mesh_folder = "./data_cubic_mesh"
 mesh_file_path = os.path.join(mesh_folder, f"{scene_id}_cubic_mesh.ply")
@@ -289,7 +217,9 @@ voxel_grid_filename = os.path.join(scene_subfolder, f"{scene_id}_voxel_grid.ply"
 voxel_carving_filename = os.path.join(scene_subfolder, f"{scene_id}_voxel_carving.ply")
 voxel_surface_filename = os.path.join(scene_subfolder, f"{scene_id}_voxel_surface.ply")
 
-camera_path = os.path.join(".", "sphere.ply") #sphere.ply
+camera_path = os.path.join(".", "old_sphere.ply") #sphere.ply
+#camera_path = os.path.join(".", "utils_SQfitting_pcd_voxelization", "sphere2.ply")
+
 visualization = True
 cubic_size = 2.0
 voxel_resolution = 128.0
@@ -321,3 +251,79 @@ print("combined voxels (carved + surface)")
 print(voxel_grid)
 #o3d.visualization.draw_geometries([voxel_grid])
 o3d.visualization.draw_geometries([voxel_grid,origin_frame])
+
+# def restore_voxel_grid(voxel_grid, center, scale):
+    
+#     restored_voxel_grid = o3d.geometry.VoxelGrid()
+#     print("voxel_grid.voxel_size:", voxel_grid.voxel_size)
+#     restored_voxel_grid.voxel_size = voxel_grid.voxel_size * scale  # restore voxel size
+#     print("restored_voxel_grid.voxel_size:", restored_voxel_grid.voxel_size)
+#     restored_voxels = []
+#     print("total voxel number of voxel hull:", len(voxel_grid.get_voxels()))
+#     for voxel in voxel_grid.get_voxels():
+#         #print("voxel.grid_index:", voxel.grid_index)
+#         voxel_index = np.array(voxel.grid_index, dtype=float)
+#         #print("voxel_index:", voxel_index)
+
+#         # compute the voxel center of every voxel in restored grid
+#         voxel_center = voxel_index * voxel_grid.voxel_size 
+#         voxel_center = voxel_center * scale  
+#         voxel_center += center 
+#         print("voxel_center:", voxel_center)
+#         restored_voxels.append(o3d.geometry.Voxel(voxel_center, voxel.color))
+
+    
+#     print("length of restored voxel list:", len(restored_voxels))
+#     restored_voxel_grid.origin = center 
+#     for voxel in restored_voxels:
+#         #print("voxel:", voxel)
+#         restored_voxel_grid.add_voxel(voxel)
+
+#     return restored_voxel_grid
+
+
+
+
+
+# def restore_voxel_grid(voxel_grid, center, scale):
+#     transformed_voxels = []
+
+#     for voxel in voxel_grid.get_voxels():
+#         # Convert voxel center to original scale and position
+#         voxel.grid_index = voxel.grid_index * scale + center
+#         transformed_voxels.append(voxel)
+
+#     return voxel_grid
+
+# def restore_voxel_grid(voxel_grid, center, scale):
+#     # Extract voxel centers and restore them to original coordinates
+#     restored_voxels = []
+    
+#     for voxel in voxel_grid.get_voxels():
+#         # Convert voxel center from normalized space back to original
+#         voxel_center = np.array(voxel.grid_index, dtype=float) * (2.0 / voxel_grid.voxel_size)  # Convert indices to coordinates
+#         voxel_center = voxel_center * scale + center  # Scale and translate back
+
+#         # Create a new voxel with restored coordinates
+#         restored_voxels.append(o3d.geometry.Voxel(voxel_center, voxel.color))
+
+#     # Create a new voxel grid with restored positions
+#     restored_voxel_grid = o3d.geometry.VoxelGrid()
+#     restored_voxel_grid.voxel_size = voxel_grid.voxel_size * scale  # Restore original voxel size
+#     restored_voxel_grid.origin = center - (voxel_grid.origin * scale)  # Restore origin
+#     for voxel in restored_voxels:
+#         restored_voxel_grid.add_voxel(voxel)
+
+#     return restored_voxel_grid
+
+
+# def camera_sphere_preprocess(model):
+#     min_bound = model.get_min_bound()
+#     max_bound = model.get_max_bound()
+#     center = min_bound + (max_bound - min_bound) / 2.0
+#     scale = np.linalg.norm(max_bound - min_bound) / 2.0 # 0.5* space diagonal
+#     vertices = np.asarray(model.vertices) #verstices of the mesh
+#     vertices -= center
+#     vertices *= 3.0 # make the camera sphere several times larger than the object mesh
+#     model.vertices = o3d.utility.Vector3dVector(vertices / scale)
+#     return model

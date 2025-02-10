@@ -2,7 +2,7 @@ wandb_project_name: Voxel_smooth
 data:
   training:
     dataset: voxel
-    roots: [datasets/Laptop9_voxelized]
+    roots: [datasets/Laptop10_voxelized]
     split: training
     max_data_num: 999999
     batch_size: 32
@@ -11,7 +11,7 @@ data:
     preload : False
   validation:
     dataset: voxel
-    roots: [datasets/Laptop9_voxelized]
+    roots: [datasets/Laptop10_voxelized]
     split: validation
     max_data_num: 999999
     batch_size: 32

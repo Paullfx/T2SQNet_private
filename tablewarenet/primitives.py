@@ -253,7 +253,7 @@ def fexp(x, p):
 def fexp_torch(x, p):
 	return torch.sign(x)*(torch.abs(x)**p)
 
-mesh = o3d.geometry.TriangleMesh.create_sphere(radius=1, resolution=4)
+mesh = o3d.geometry.TriangleMesh.create_sphere(radius=1, resolution=4)# originally 4 # resolution might be too small for more precise modelling.
 vertices_numpy = np.asarray(mesh.vertices)
 eta_sph = torch.from_numpy(np.arcsin(vertices_numpy[:, 2:3])).float()
 omega_sph = torch.from_numpy(np.arctan2(vertices_numpy[:, 1:2], vertices_numpy[:, 0:1])).float()

@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 
 scene_id = "tableware_6_1"
 tableware = "laptop"
-tableware_ply_path = "/home/hamilton/Master_thesis/T2SQNet_private/tableware_6_1_laptop_denoised.ply"
+tableware_ply_path = "./tableware_6_1_laptop_denoised.ply"
 #f"/home/fuxiao/Projects/Orbbec/concept-graphs/conceptgraph/dataset/external/{scene_id}/exps/exp_default/{scene_id}_{tableware}_denoised.ply"
 #"/home/hamilton/Master_thesis/T2SQNet_private/tableware_6_1_laptop_denoised.ply"
 point_cloud = o3d.io.read_point_cloud(tableware_ply_path)
@@ -122,5 +122,9 @@ os.makedirs(output_folder, exist_ok=True)
 output_file_path = os.path.join(output_folder, f"{scene_id}_cubic_mesh.ply")
 o3d.io.write_triangle_mesh(output_file_path, vox_mesh)
 print(f"Voxel mesh saved to: {output_file_path}")
+
+output_vg_path = os.path.join(output_folder, f"{scene_id}_voxel_grid.ply")
+o3d.io.write_voxel_grid(output_vg_path, voxel_grid)
+print(f"Voxel grid saved to: {output_vg_path}")
 
 

@@ -14,7 +14,7 @@ python generate_tableware_pybullet.py \
 --num_cameras 36 \
 --sim_type table \
 --reduce_ratio 2 \
-#--debug
+--debug
 #--enable_gui
 #--debug
 
@@ -32,4 +32,4 @@ python generate_tableware_pybullet.py \
 # Voxelize Objects for Training ResNet3D
 python generate_tableware_voxelize.py \
 --folder_name datasets/test_laptop \
-#--debug
+--debug
