@@ -9,9 +9,13 @@ import matplotlib.pyplot as plt
 
 ####### load point cloud #######
 
-scene_id = "tableware_6_1"
-tableware = "laptop"
-tableware_ply_path = "./tableware_6_1_laptop_denoised.ply"
+scene_id = "tableware_5_12" # "tableware_6_1" # "tableware_5_12" 
+tableware = "cup" # "laptop" # "cup"
+
+file_directory = '/home/fuxiao/Projects/Orbbec/concept-graphs/conceptgraph/dataset/external/'
+tableware_ply_path = os.path.join(file_directory, f"{scene_id}", 'exps', 'exp_default', f"{scene_id}_{tableware}_denoised.ply")
+
+#tableware_ply_path = "./tableware_6_1_laptop_denoised.ply"
 #f"/home/fuxiao/Projects/Orbbec/concept-graphs/conceptgraph/dataset/external/{scene_id}/exps/exp_default/{scene_id}_{tableware}_denoised.ply"
 #"/home/hamilton/Master_thesis/T2SQNet_private/tableware_6_1_laptop_denoised.ply"
 point_cloud = o3d.io.read_point_cloud(tableware_ply_path)

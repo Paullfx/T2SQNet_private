@@ -26,7 +26,7 @@ Young Hun Kim*,
 - Pointcloud sampling
   - mamba activate ros_cg, ros2 run sai_orbbec sai_publisher
   - Then open another terminal. mamba activate ros_cg, change data save folder in ros_tableware.yml( Modify the "scene_id" in ros_tableware.yaml to e.g. "tableware_4_9"), cd conceptgraph/slam, python3 ros_rerun_sai_T2.py
-  - Data processing: firstly run fuxiao_open3d_tableware.py in /home/fuxiao/Projects/Orbbec/concept-graphs/conceptgraph/scripts/fuxiao_PC/drafts/fuxiao_open3d_tableware_test.py. This will generate a .ply file in 'concept-graphs/conceptgraph/dataset/external/{exp_id}/exps/exp/default' for the specific tableware e.g. "laptop". Remember to modify this specific tableware class to read the tableware from the point cloud accordingly.
+  - Data processing: modify the exp_id and tableware in target_pc2.py and run the script. This will output the extracted point cloud of the chosen object.
   - Secondly run tableware_process.py to denoise, this will  generate a "{exp_id}_bowl_denoised.ply" file. After experimenting, the parameters for denoise are setted "voxel_down_pcd.remove_radius_outlier(nb_points=200, radius=0.2)". 
 - Voxel carving to convert the pcd into voxels
 ## How to analyse the intermediate results of T2SQNet in simulation (Fuxiao)

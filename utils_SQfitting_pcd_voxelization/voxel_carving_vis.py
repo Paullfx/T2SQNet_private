@@ -7,6 +7,7 @@ import pickle
 from omegaconf import OmegaConf
 
 
+
 # Reference: https://www.open3d.org/docs/latest/tutorial/Advanced/voxelization.html
 
 # convert cartesian coordinates into spherical coordinates
@@ -174,7 +175,7 @@ def voxel_carving(mesh,
 
         # depth map carving method
         if use_depth:
-            voxel_carving.carve_depth_map(o3d.geometry.Image(depth), param)
+            voxel_carving.carve_depth_map(o3d.geometry.Image(depth), param, keep_voxels_outside_image = True)
         else:
             voxel_carving.carve_silhouette(o3d.geometry.Image(depth), param)
         #print("Carve view %03d/%03d" % (cid + 1, len(camera_sphere.vertices)))
@@ -277,6 +278,16 @@ def vox_augmentation(raw_voxel, bound1, bound2):
 
     return voxel
 
+def bbox2o3d (bbox):
+
+    bbox = np.array(bbox)
+    bbox_min = bbox[:3] - bbox[3:]
+    bbox_max = bbox[:3] + bbox[3:]
+    obj_bbox = o3d.geometry.AxisAlignedBoundingBox()
+    obj_bbox.min_bound = bbox_min
+    obj_bbox.max_bound = bbox_max
+
+    return obj_bbox
 # def mesh2voxelhull(mesh, camera_path, yml_path)
 
 #     dataset_args = OmegaConf.load(yml_path)
@@ -289,13 +300,15 @@ def vox_augmentation(raw_voxel, bound1, bound2):
 if __name__ == "__main__":
     ### load the data 
 
-    scene_id = "tableware_6_1"
-    object_class = "Laptop"
+    scene_id = "tableware_6_1" # "tableware_6_1" # "tableware_5_12"
+    object_class = "Laptop" # "Laptop" # "HandlessCup"
 
 
     mesh_folder = "./data_cubic_mesh"
     mesh_file_path = os.path.join(mesh_folder, f"{scene_id}_cubic_mesh.ply")
     mesh = o3d.io.read_triangle_mesh(mesh_file_path)
+    print("Original mesh size:", mesh.get_max_bound() - mesh.get_min_bound())
+    original_mesh = mesh
     #add a print statement to check the mesh
     print(mesh)
     origin_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.2)
@@ -332,12 +345,36 @@ if __name__ == "__main__":
     bbox = get_bbox(mesh)
     marginal_bbox, max_bbox = bbox2marginal_max(bbox, marginal_bbox_size, max_bbox_size)
 
+    marginal_bbox_o3d = bbox2o3d(marginal_bbox)
+    marginal_bbox_o3d.color = (1, 0, 0)  # red
+
+    max_bbox_o3d = bbox2o3d(max_bbox)
+    max_bbox_o3d.color = (0, 1, 0)  # green
+
+    object_bbox_o3d = bbox2o3d(bbox)
+    object_bbox_o3d.color = (0, 0, 1)  # blue
+
+    o3d.visualization.draw_geometries([original_mesh,origin_frame,object_bbox_o3d,max_bbox_o3d,marginal_bbox_o3d],window_name="Original Mesh")
 
     ### run the voxel carving method ###
     voxel_grid, voxel_carving, voxel_surface,bbox = voxel_carving(
         mesh, camera_path, marginal_bbox, voxel_size)
+    
 
-    vox = raw_voxel2vox(voxel_grid, marginal_bbox, voxel_size)
+
+    marginal_center = (marginal_bbox_o3d.min_bound + marginal_bbox_o3d.max_bound) / 2
+    max_center = (max_bbox_o3d.min_bound + max_bbox_o3d.max_bound) / 2
+    object_center = (object_bbox_o3d.min_bound + object_bbox_o3d.max_bound) / 2
+
+    marginal_bbox_o3d.translate(-marginal_center)
+    max_bbox_o3d.translate(-max_center)
+    object_bbox_o3d.translate(-object_center)
+
+    o3d.visualization.draw_geometries([voxel_surface,origin_frame,object_bbox_o3d,max_bbox_o3d,marginal_bbox_o3d],window_name="Voxel Surface")
+    o3d.visualization.draw_geometries([voxel_carving,origin_frame,object_bbox_o3d,max_bbox_o3d,marginal_bbox_o3d], window_name="Voxel Carving")
+    o3d.visualization.draw_geometries([voxel_grid,origin_frame,object_bbox_o3d,max_bbox_o3d,marginal_bbox_o3d], window_name="Combined Voxel Hull")
+
+    vox = raw_voxel2vox(voxel_carving, marginal_bbox, voxel_size)
 
     bound1, bound2 = get_bounds(bbox, max_bbox, marginal_bbox, voxel_size)
 
@@ -373,14 +410,15 @@ if __name__ == "__main__":
     # print("surface voxels")
     # print(voxel_surface)
     # #o3d.visualization.draw_geometries([voxel_surface])
-    # o3d.visualization.draw_geometries([voxel_surface,origin_frame])
+    # o3d.visualization.draw_geometries([voxel_surface,origin_frame],window_name="Voxel Surface")
 
     # print("carved voxels")
     # print(voxel_carving)
     # #o3d.visualization.draw_geometries([voxel_carving])
-    # o3d.visualization.draw_geometries([voxel_carving,origin_frame])
+    # 3d.visualization.draw_geometries([voxel_carving,origin_frame], window_name="Voxel Carving")
 
     # print("combined voxels (carved + surface)")
     # print(voxel_grid)
     # #o3d.visualization.draw_geometries([voxel_grid])
-    # o3d.visualization.draw_geometries([voxel_grid,origin_frame])
+    # o3d.visualization.draw_geometries([voxel_grid,origin_frame], window_name="Combined Voxel Hull")
+

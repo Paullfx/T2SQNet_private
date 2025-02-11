@@ -46,9 +46,15 @@ def draw_3d_bbox(ax, bbox, label=None, color='blue'):
 
 
 
-scene_id = "tableware_6_1"
-class_names = ['Laptop']
+scene_id = "tableware_6_1" # "tableware_5_12" # "tableware_6_1"
+class_names = ['Laptop'] # ['HandlessCup'] # ['Laptop']
 input_dir = f'./data_test/{scene_id }'
+
+
+tableware = "laptop" # "laptop" # "cup"
+file_directory = '/home/fuxiao/Projects/Orbbec/concept-graphs/conceptgraph/dataset/external/'
+gt_path = os.path.join(file_directory, f"{scene_id}", 'exps', 'exp_default', f"{scene_id}_{tableware}_denoised.ply")
+
 # results_dir = f'./intermediates/{exp_index}/results'
 #gt_dir = f'./intermediates/{exp_index}/ground_truth'
 #inferred_object_list_dir = f'./intermediates/{exp_index}/inferred_obj_list'
@@ -60,7 +66,7 @@ bboxes_path = os.path.join(input_dir, f'{scene_id}_true_bbox.pkl')
 #cls_path = os.path.join(input_dir, 'cls.pkl')
 # results_path = os.path.join(results_dir, 'results.pkl')
 #gt_path = os.path.join(gt_dir, 'gt.pkl')
-gt_path = "./tableware_6_1_laptop_denoised.ply"
+
 gt = o3d.io.read_point_cloud(gt_path)
 inferred_object_list_path = os.path.join(input_dir, f"{scene_id}_param_predicted.pkl")
 

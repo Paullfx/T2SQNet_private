@@ -30,7 +30,8 @@ if __name__ == "__main__":
     )
 
     # prepare data input
-    object_class = "Laptop"
+    scene_id = "tableware_6_1" # "tableware_6_1" # "tableware_5_12"
+    object_class = "Laptop"  # "Laptop" # "HandlessCup"
     #object_idx = 4 #     "WineGlass" : 0, "Bowl" : 1, "Bottle" : 2, "BeerBottle" : 3,
     # "HandlessCup" : 4, "Mug" : 5, "Dish" : 6
     object_idx = name_to_idx[object_class]
@@ -77,7 +78,7 @@ if __name__ == "__main__":
     ################################ End of loading voxel from sim
 
     ################################ Voxel from real data #######################
-    scene_id = "tableware_6_1"
+    
     input_folder = f"./data_test/{scene_id}"
     input_file = f"{scene_id}_voxel_info.pkl"
     with open(os.path.join(input_folder, input_file), 'rb') as f:

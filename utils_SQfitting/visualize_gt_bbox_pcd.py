@@ -45,7 +45,7 @@ def draw_3d_bbox(ax, bbox, label=None, color='blue'):
 
 # Define paths
 # exp_index = "scene_id_default"# "tableware_3_9" #blender_table_0_3 #"pybullet_single_BeerBottle" # "pybullet_table_1_2"
-exp_index = "pybullet_single_HandlessCup"
+exp_index = "pybullet_single_Bowl"
 input_dir = f'./intermediates/{exp_index}/bboxes_cls'
 # results_dir = f'./intermediates/{exp_index}/results'
 gt_dir = f'./intermediates/{exp_index}/ground_truth'

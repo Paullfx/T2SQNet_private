@@ -171,14 +171,14 @@ def process_file(
 		)
 
 		###### fuxiao: bbox only for analysis purpose, no need in real data generation process
-		marginal_bbox_o3d = bbox2o3d(marginal_bbox)
-		marginal_bbox_o3d.color = (1, 0, 0)  # red
+		# marginal_bbox_o3d = bbox2o3d(marginal_bbox)
+		# marginal_bbox_o3d.color = (1, 0, 0)  # red
 
-		max_bbox_o3d = bbox2o3d(max_bbox)
-		max_bbox_o3d.color = (0, 1, 0)  # green
+		# max_bbox_o3d = bbox2o3d(max_bbox)
+		# max_bbox_o3d.color = (0, 1, 0)  # green
 
-		object_bbox_o3d = bbox2o3d(object_bbox)
-		object_bbox_o3d.color = (0, 0, 1)  # blu
+		# object_bbox_o3d = bbox2o3d(object_bbox)
+		# object_bbox_o3d.color = (0, 0, 1)  # blu
 
 		if debug:
 			data_debug["voxel_size"] = deepcopy(voxel_size)
