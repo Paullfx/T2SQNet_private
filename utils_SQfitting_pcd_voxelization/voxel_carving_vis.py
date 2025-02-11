@@ -2,7 +2,9 @@ import open3d as o3d
 import numpy as np
 import os
 import torch
+import math
 from omegaconf import OmegaConf
+
 
 # Reference: https://www.open3d.org/docs/latest/tutorial/Advanced/voxelization.html
 
@@ -53,7 +55,7 @@ def get_bbox(model):
     bbox = [center[0], center[1], center[2], (max_bound[0] - min_bound[0])/2, (max_bound[1] - min_bound[1])/2, (max_bound[2] - min_bound[2])/2]
     return bbox
 
-def bbox2marginal(bbox, marginal_bbox_size):
+def bbox2marginal_max(bbox, marginal_bbox_size, max_bbox_size):
     marginal_bbox = np.concatenate(
 			(
 				bbox[0:2], 
@@ -61,7 +63,14 @@ def bbox2marginal(bbox, marginal_bbox_size):
 				marginal_bbox_size), 
 			axis=0
 		)
-    return marginal_bbox
+    max_bbox = np.concatenate(
+			(
+				bbox[0:2], 
+				np.array([bbox[2] - bbox[5] + max_bbox_size[2]]),
+				max_bbox_size), 
+			axis=0
+		)
+    return marginal_bbox, max_bbox
 
 def restore_voxel_grid(voxel_grid, center, scale):
     # Create a new VoxelGrid for the restored voxels
@@ -190,20 +199,82 @@ def voxel_carving(mesh,
             max_bound=(marginal_bbox[3], marginal_bbox[4], marginal_bbox[5]))
     else:
         raise Exception('invalid surface method')
-    voxel_carving_surface = voxel_surface + voxel_carving
+    voxel_carving_with_surface = voxel_surface + voxel_carving
     print("Original dense voxel hull size:", voxel_carving.get_max_bound() - voxel_carving.get_min_bound())
-    voxel_carving_surface = restore_voxel_grid(voxel_carving_surface, mesh_center, mesh_scale)
-    voxel_carving = restore_voxel_grid(voxel_carving, mesh_center, mesh_scale)
-    voxel_surface = restore_voxel_grid(voxel_surface, mesh_center, mesh_scale)
+    # voxel_carving_with_surface = restore_voxel_grid(voxel_carving_with_surface, mesh_center, mesh_scale)
+    # voxel_carving = restore_voxel_grid(voxel_carving, mesh_center, mesh_scale)
+    # voxel_surface = restore_voxel_grid(voxel_surface, mesh_center, mesh_scale)
     
     print("Restored dense voxel carving size:", voxel_carving.get_max_bound() - voxel_carving.get_min_bound())
-    print("Restored dense voxel carving + surface size:", voxel_carving_surface.get_max_bound() - voxel_carving_surface.get_min_bound())
-    xyz_min = voxel_carving_surface.get_min_bound()
-    xyz_max = voxel_carving_surface.get_max_bound()
+    print("Restored dense voxel carving + surface size:", voxel_carving_with_surface.get_max_bound() - voxel_carving_with_surface.get_min_bound())
+    xyz_min = voxel_carving_with_surface.get_min_bound()
+    xyz_max = voxel_carving_with_surface.get_max_bound()
     bbox =[0.5*(xyz_min[0]+xyz_max[0]),0.5*(xyz_min[1]+xyz_max[1]),0.5*(xyz_min[2]+xyz_max[2]),0.5 *(xyz_max[0]-xyz_min[0]),0.5*(xyz_max[1]-xyz_min[1]),0.5*(xyz_max[2]-xyz_min[2])]
     print(bbox)
 
-    return voxel_carving_surface, voxel_carving, voxel_surface, bbox
+    return voxel_carving_with_surface, voxel_carving, voxel_surface, bbox
+
+
+def raw_voxel2vox(voxel_grid, marginal_bbox, voxel_size):
+    w = round(marginal_bbox[3] * 2 / voxel_size)
+    h = round(marginal_bbox[4] * 2 / voxel_size)
+    d = round(marginal_bbox[5] * 2 / voxel_size)
+
+    voxels = voxel_grid.get_voxels()
+    try:
+        list_indices = list(vx.grid_index for vx in voxels)
+    except:
+        print("voxel_grid.get_voxels() failed")
+    indices = np.stack(list_indices)
+    indices_tensor = torch.from_numpy(indices).long()
+    vox = torch.zeros(w, h, d)
+    vox[
+        indices_tensor[:, 0], 
+        indices_tensor[:, 1], 
+        indices_tensor[:, 2]
+    ] = 1
+    vox = vox.to(torch.bool)
+    
+    return vox
+
+def get_bounds(object_bbox, max_bbox, marginal_bbox, voxel_size):
+
+    w = round(marginal_bbox[3] * 2 / voxel_size)
+    h = round(marginal_bbox[4] * 2 / voxel_size)
+    d = round(marginal_bbox[5] * 2 / voxel_size)
+    w_min1 = math.floor(w * (marginal_bbox[3] - max_bbox[3]) / (2 * marginal_bbox[3]))
+    w_max1 = math.ceil(w * (marginal_bbox[3] + max_bbox[3]) / (2 * marginal_bbox[3]))
+    h_min1 = math.floor(h * (marginal_bbox[4] - max_bbox[4]) / (2 * marginal_bbox[4]))
+    h_max1 = math.ceil(h * (marginal_bbox[4] + max_bbox[4]) / (2 * marginal_bbox[4]))
+    d_min1 = 0
+    d_max1 = math.ceil(d * (2 * max_bbox[5]) / (2 * marginal_bbox[5])) - 1
+    bound1 = [w_min1, w_max1, h_min1, h_max1, d_min1, d_max1]
+
+    w_min2 = math.floor(w * (marginal_bbox[3] - object_bbox[3]) / (2 * marginal_bbox[3]))
+    w_max2 = math.ceil(w * (marginal_bbox[3] + object_bbox[3]) / (2 * marginal_bbox[3]))
+    h_min2 = math.floor(h * (marginal_bbox[4] - object_bbox[4]) / (2 * marginal_bbox[4]))
+    h_max2 = math.ceil(h * (marginal_bbox[4] + object_bbox[4]) / (2 * marginal_bbox[4]))
+    d_min2 = 0
+    d_max2 = math.ceil(d * (2 * object_bbox[5]) / (2 * marginal_bbox[5])) - 1
+    bound2 = [w_min2, w_max2, h_min2, h_max2, d_min2, d_max2]
+
+    return bound1, bound2
+
+def orientation_transform():
+    pass
+    
+def vox_augmentation(raw_voxel, bound1, bound2):
+
+    raw_voxel = raw_voxel.float()
+    w_min1, w_max1, h_min1, h_max1, d_min1, d_max1 = bound1
+    w_min2, w_max2, h_min2, h_max2, d_min2, d_max2 = bound2
+
+    inside_voxel = torch.zeros_like(raw_voxel).fill_(0.)
+    inside_voxel[w_min2:w_max2, h_min2:h_max2, d_min2:d_max2] = 1.
+    voxel = torch.stack([raw_voxel, inside_voxel])
+    voxel = voxel[:, w_min1:w_max1, h_min1:h_max1, d_min1:d_max1]
+
+    return voxel
 
 if __name__ == "__main__":
     ### load the data 
@@ -219,7 +290,7 @@ if __name__ == "__main__":
     print(mesh)
     origin_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.2)
     print(" The x, y, z axis are rendered as red, green, and blue arrows.")
-    o3d.visualization.draw_geometries([mesh,origin_frame])
+    # o3d.visualization.draw_geometries([mesh,origin_frame])
 
     output_folder = "./results_voxel_carving"
     scene_subfolder = os.path.join(output_folder, scene_id)
@@ -248,32 +319,42 @@ if __name__ == "__main__":
     voxel_size = voxel_size_dict[object_class]
 
     bbox = get_bbox(mesh)
-    marginal_bbox = bbox2marginal(bbox, marginal_bbox_size)
+    marginal_bbox, max_bbox = bbox2marginal_max(bbox, marginal_bbox_size, max_bbox_size)
+
 
     ### run the voxel carving method ###
     voxel_grid, voxel_carving, voxel_surface,bbox = voxel_carving(
         mesh, camera_path, marginal_bbox, voxel_size)
 
+    vox = raw_voxel2vox(voxel_grid, marginal_bbox, voxel_size)
 
-    # store the voxel grid 
-    o3d.io.write_voxel_grid(voxel_grid_filename, voxel_grid)
-    o3d.io.write_voxel_grid(voxel_carving_filename, voxel_carving)
-    o3d.io.write_voxel_grid(voxel_surface_filename, voxel_surface)
+    bound1, bound2 = get_bounds(bbox, max_bbox, marginal_bbox, voxel_size)
 
-    print(f"Voxel grids saved to {scene_subfolder}")
+    voxel = vox_augmentation(vox,bound1, bound2)
 
-    ### visualize the results ###
-    print("surface voxels")
-    print(voxel_surface)
-    #o3d.visualization.draw_geometries([voxel_surface])
-    o3d.visualization.draw_geometries([voxel_surface,origin_frame])
+    print("done")
 
-    print("carved voxels")
-    print(voxel_carving)
-    #o3d.visualization.draw_geometries([voxel_carving])
-    o3d.visualization.draw_geometries([voxel_carving,origin_frame])
 
-    print("combined voxels (carved + surface)")
-    print(voxel_grid)
-    #o3d.visualization.draw_geometries([voxel_grid])
-    o3d.visualization.draw_geometries([voxel_grid,origin_frame])
+
+    # # store the voxel grid 
+    # o3d.io.write_voxel_grid(voxel_grid_filename, voxel_grid)
+    # o3d.io.write_voxel_grid(voxel_carving_filename, voxel_carving)
+    # o3d.io.write_voxel_grid(voxel_surface_filename, voxel_surface)
+
+    # print(f"Voxel grids saved to {scene_subfolder}")
+
+    # ### visualize the results ###
+    # print("surface voxels")
+    # print(voxel_surface)
+    # #o3d.visualization.draw_geometries([voxel_surface])
+    # o3d.visualization.draw_geometries([voxel_surface,origin_frame])
+
+    # print("carved voxels")
+    # print(voxel_carving)
+    # #o3d.visualization.draw_geometries([voxel_carving])
+    # o3d.visualization.draw_geometries([voxel_carving,origin_frame])
+
+    # print("combined voxels (carved + surface)")
+    # print(voxel_grid)
+    # #o3d.visualization.draw_geometries([voxel_grid])
+    # o3d.visualization.draw_geometries([voxel_grid,origin_frame])
