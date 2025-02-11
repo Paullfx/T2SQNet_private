@@ -10,3 +10,4 @@ datasets_old/
 wandb/
 assets/
 results/
+pretrained_weights/
