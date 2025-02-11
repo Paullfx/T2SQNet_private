@@ -2,6 +2,7 @@ import sys
 import os
 import pickle
 import numpy as np
+import open3d as o3d
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from matplotlib.cm import get_cmap
@@ -43,25 +44,28 @@ def draw_3d_bbox(ax, bbox, label=None, color='blue'):
     if label:
         ax.text(x, y, z, label, color=color)
 
-# Define paths
-# exp_index = "scene_id_default"# "tableware_3_9" #blender_table_0_3 #"pybullet_single_BeerBottle" # "pybullet_table_1_2"
-exp_index = "pybullet_single_HandlessCup"
-input_dir = f'./intermediates/{exp_index}/bboxes_cls'
-# results_dir = f'./intermediates/{exp_index}/results'
-gt_dir = f'./intermediates/{exp_index}/ground_truth'
-inferred_object_list_dir = f'./intermediates/{exp_index}/inferred_obj_list'
-# 
-bbox_info_dir = f'./intermediates/{exp_index}/bbox_info'
-voxel_hull_dir = f'./intermediates/{exp_index}/object_list'
 
-bboxes_path = os.path.join(input_dir, 'bboxes.pkl')
-cls_path = os.path.join(input_dir, 'cls.pkl')
-# results_path = os.path.join(results_dir, 'results.pkl')
-gt_path = os.path.join(gt_dir, 'gt.pkl')
-inferred_object_list_path = os.path.join(inferred_object_list_dir, 'inferred.pkl')
+
+scene_id = "tableware_6_1"
+class_names = ['Laptop']
+input_dir = f'./data_test/{scene_id }'
+# results_dir = f'./intermediates/{exp_index}/results'
+#gt_dir = f'./intermediates/{exp_index}/ground_truth'
+#inferred_object_list_dir = f'./intermediates/{exp_index}/inferred_obj_list'
 # 
-bbox_info_path = os.path.join(bbox_info_dir, 'bbox_info.pkl')
-voxel_hull_path = os.path.join(voxel_hull_dir, 'object_list.pkl')
+#bbox_info_dir = f'./intermediates/{exp_index}/bbox_info'
+#voxel_hull_dir = f'./intermediates/{exp_index}/object_list'
+
+bboxes_path = os.path.join(input_dir, f'{scene_id}_true_bbox.pkl')
+#cls_path = os.path.join(input_dir, 'cls.pkl')
+# results_path = os.path.join(results_dir, 'results.pkl')
+#gt_path = os.path.join(gt_dir, 'gt.pkl')
+gt_path = "./tableware_6_1_laptop_denoised.ply"
+gt = o3d.io.read_point_cloud(gt_path)
+inferred_object_list_path = os.path.join(input_dir, f"{scene_id}_param_predicted.pkl")
+
+bbox_info_path = os.path.join(input_dir, f"{scene_id}_true_bbox.pkl")
+#voxel_hull_path = os.path.join(voxel_hull_dir, 'object_list.pkl')
 
 voxel_data_config_path = "./configs/voxelize_config.yml"
 
@@ -88,8 +92,10 @@ try:
 except FileNotFoundError:
     print(f"Error: File not found at {bbox_info_path}. Please check the path and try again.")
     exit()
-bboxes = bbox_info['bboxes']
-class_names = bbox_info['objects_class']
+bboxes =[]
+bboxes.append(bbox_info)
+#bboxes = bbox_info['bboxes']
+#class_names = bbox_info['objects_class']
 
 # Load inferred object list
 try:
@@ -100,13 +106,13 @@ except FileNotFoundError:
     print(f"Error: File not found at {inferred_object_list_path}. Please check the path and try again.")
     inferred = None
 
-# Load voxel hull
-with open(voxel_hull_path, 'rb') as f:
-    obj_list = pickle.load(f)
+# # Load voxel hull
+# with open(voxel_hull_path, 'rb') as f:
+#     obj_list = pickle.load(f)
 
-# print all the tabelware classes
-for i in range(len(obj_list[0])):
-    print (type(obj_list[0][i]))
+# # print all the tabelware classes
+# for i in range(len(obj_list[0])):
+#     print (type(obj_list[0][i]))
 
 
 # # Load results
@@ -157,28 +163,46 @@ for obj in sq_results:
 ############################## About the ground truth ##############################
 ####################################################################################
 
-# Load gt
-try:
-    with open(gt_path, 'rb') as f:
-        gt = pickle.load(f)
-    print("Ground truth loaded successfully.")
-except FileNotFoundError:
-    print(f"Error: File not found at {gt_path}. Please check the path and try again.")
-    results = None
+# # Load gt
+# try:
+#     with open(gt_path, 'rb') as f:
+#         gt = pickle.load(f)
+#     print("Ground truth loaded successfully.")
+# except FileNotFoundError:
+#     print(f"Error: File not found at {gt_path}. Please check the path and try again.")
+#     results = None
 
 # load individual object
+
 position_gt = []
-print("Number of ground truth objects:", len(gt))
-for idx, obj in enumerate(gt):
-    print(idx, "\tObject Name:", obj.name, "\n\tObject Params:", obj.params)
-    position_gt.append(obj.SE3[:3,3].cpu().numpy())
+# bottom center of the true bbox as the position of the ground truth
+gt_bbox = gt.get_axis_aligned_bounding_box()
+min_bound = gt_bbox.get_min_bound()
+max_bound = gt_bbox.get_max_bound()
+
+bottom_center = np.array([(min_bound[0] + max_bound[0]) / 2,
+                          (min_bound[1] + max_bound[1]) / 2,
+                          min_bound[2]])
+true_bbox_center = np.array([(min_bound[0] + max_bound[0]) / 2,
+                          (min_bound[1] + max_bound[1]) / 2,
+                          (min_bound[2] + max_bound[2]) / 2])
+print("bottom center of the ground truth bbox:", bottom_center)
+print("center of the ground truth bbox:", true_bbox_center)
+position_gt.append(bottom_center)
+#print("Number of ground truth objects:", len(gt))
+# for idx, obj in enumerate(gt):
+#     print(idx, "\tObject Name:", obj.name, "\n\tObject Params:", obj.params)
+#     position_gt.append(obj.SE3[:3,3].cpu().numpy())
 
 # get_point_cloud from gt tableware
-number_of_points = 1000
+#number_of_points = 1000
 points_gt = []
-for obj_gt in gt:
-    points_gt.append(obj_gt.get_point_cloud(number_of_points=number_of_points))  # Use the get_point_cloud function
-    print("Point cloud of ground truth loaded successfully.")
+pc_numpy = np.asarray(gt.points)
+points_gt.append(pc_numpy)
+
+# for obj_gt in gt:
+#     points_gt.append(obj_gt.get_point_cloud(number_of_points=number_of_points))  # Use the get_point_cloud function
+#     print("Point cloud of ground truth loaded successfully.")
 ########################################### gt module done ##############################
 
 
@@ -202,7 +226,7 @@ colors = [cmap(i) for i in range(number_of_colors)]
 # Plot reconstructed point cloud data
 for i, obj in enumerate(points):
     x, y, z = obj[:, 0], obj[:, 1], obj[:, 2]
-    ax.scatter(x, y, z, color= 'r', marker='.', label=f"reconstructed T2SQNet: {class_names[i]}", s=5)
+    ax.scatter(x, y, z, color= 'r', marker='.', label=f"reconstructed T2SQNet: {class_names[i]}", s=10)
     #ax.scatter(x, y, z, color=colors[i], marker='.', label=f"reconstructed T2SQNet: {class_names[i]}", s=5)
 
 # Plot reconstructed object position   

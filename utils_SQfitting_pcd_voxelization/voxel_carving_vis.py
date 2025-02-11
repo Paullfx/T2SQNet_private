@@ -3,6 +3,7 @@ import numpy as np
 import os
 import torch
 import math
+import pickle
 from omegaconf import OmegaConf
 
 
@@ -72,7 +73,7 @@ def bbox2marginal_max(bbox, marginal_bbox_size, max_bbox_size):
 		)
     return marginal_bbox, max_bbox
 
-def restore_voxel_grid(voxel_grid, center, scale):
+def restore_voxel_grid(voxel_grid, center, scale): # not used
     # Create a new VoxelGrid for the restored voxels
     restored_voxel_grid = o3d.geometry.VoxelGrid()
     restored_voxel_grid.voxel_size = voxel_grid.voxel_size * scale  # Restore voxel size
@@ -209,8 +210,8 @@ def voxel_carving(mesh,
     print("Restored dense voxel carving + surface size:", voxel_carving_with_surface.get_max_bound() - voxel_carving_with_surface.get_min_bound())
     xyz_min = voxel_carving_with_surface.get_min_bound()
     xyz_max = voxel_carving_with_surface.get_max_bound()
-    bbox =[0.5*(xyz_min[0]+xyz_max[0]),0.5*(xyz_min[1]+xyz_max[1]),0.5*(xyz_min[2]+xyz_max[2]),0.5 *(xyz_max[0]-xyz_min[0]),0.5*(xyz_max[1]-xyz_min[1]),0.5*(xyz_max[2]-xyz_min[2])]
-    print(bbox)
+    whd_bbox =[0.5*(xyz_min[0]+xyz_max[0]),0.5*(xyz_min[1]+xyz_max[1]),0.5*(xyz_min[2]+xyz_max[2]),0.5 *(xyz_max[0]-xyz_min[0]),0.5*(xyz_max[1]-xyz_min[1]),0.5*(xyz_max[2]-xyz_min[2])]
+    print(whd_bbox)
 
     return voxel_carving_with_surface, voxel_carving, voxel_surface, bbox
 
@@ -276,6 +277,15 @@ def vox_augmentation(raw_voxel, bound1, bound2):
 
     return voxel
 
+# def mesh2voxelhull(mesh, camera_path, yml_path)
+
+#     dataset_args = OmegaConf.load(yml_path)
+#     marginal_bbox_size_dict = dataset_args.marginal_bbox_size
+#     max_bbox_size_dict = dataset_args.max_bbox_size
+#     voxel_size_dict = dataset_args.voxel_size
+
+
+
 if __name__ == "__main__":
     ### load the data 
 
@@ -317,6 +327,7 @@ if __name__ == "__main__":
     marginal_bbox_size = torch.tensor(marginal_bbox_size_dict[object_class])
     max_bbox_size = torch.tensor(max_bbox_size_dict[object_class])
     voxel_size = voxel_size_dict[object_class]
+    voxel_scale = torch.tensor(voxel_size).unsqueeze(0)
 
     bbox = get_bbox(mesh)
     marginal_bbox, max_bbox = bbox2marginal_max(bbox, marginal_bbox_size, max_bbox_size)
@@ -332,9 +343,24 @@ if __name__ == "__main__":
 
     voxel = vox_augmentation(vox,bound1, bound2)
 
+    
+    ### save
+    voxel_info ={
+        "voxel": voxel,
+        "voxel_scale": voxel_scale,
+        "bbox": bbox
+    }
+
     print("done")
 
+    output_folder = f"./data_test/{scene_id}"
+    output_file = os.path.join(output_folder, f"{scene_id}_voxel_info.pkl")
+    os.makedirs(output_folder, exist_ok=True)
 
+    with open(output_file, 'wb') as f:
+        pickle.dump(
+            voxel_info, f, pickle.HIGHEST_PROTOCOL)
+        f.close()
 
     # # store the voxel grid 
     # o3d.io.write_voxel_grid(voxel_grid_filename, voxel_grid)
