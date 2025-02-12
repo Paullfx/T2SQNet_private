@@ -46,12 +46,11 @@ def draw_3d_bbox(ax, bbox, label=None, color='blue'):
 
 
 
-scene_id = "tableware_6_1" # "tableware_5_12" # "tableware_6_1"
+scene_id = "tableware_6_5" # 5_11 BeerBottle bottle# "tableware_5_12" # "tableware_6_1"
 class_names = ['Laptop'] # ['HandlessCup'] # ['Laptop']
-input_dir = f'./data_test/{scene_id }'
-
-
 tableware = "laptop" # "laptop" # "cup"
+
+input_dir = f'./data_test/{scene_id }'
 file_directory = '/home/fuxiao/Projects/Orbbec/concept-graphs/conceptgraph/dataset/external/'
 gt_path = os.path.join(file_directory, f"{scene_id}", 'exps', 'exp_default', f"{scene_id}_{tableware}_denoised.ply")
 

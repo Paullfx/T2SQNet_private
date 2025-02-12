@@ -300,7 +300,7 @@ def bbox2o3d (bbox):
 if __name__ == "__main__":
     ### load the data 
 
-    scene_id = "tableware_6_1" # "tableware_6_1" # "tableware_5_12"
+    scene_id = "tableware_6_5" # 4_16 4_17 Bowl # 5_8 BeerBottle # 5_11, BeerBottle# "tableware_6_1" # "tableware_5_12"
     object_class = "Laptop" # "Laptop" # "HandlessCup"
 
 
@@ -374,7 +374,7 @@ if __name__ == "__main__":
     o3d.visualization.draw_geometries([voxel_carving,origin_frame,object_bbox_o3d,max_bbox_o3d,marginal_bbox_o3d], window_name="Voxel Carving")
     o3d.visualization.draw_geometries([voxel_grid,origin_frame,object_bbox_o3d,max_bbox_o3d,marginal_bbox_o3d], window_name="Combined Voxel Hull")
 
-    vox = raw_voxel2vox(voxel_carving, marginal_bbox, voxel_size)
+    vox = raw_voxel2vox(voxel_grid, marginal_bbox, voxel_size)
 
     bound1, bound2 = get_bounds(bbox, max_bbox, marginal_bbox, voxel_size)
 

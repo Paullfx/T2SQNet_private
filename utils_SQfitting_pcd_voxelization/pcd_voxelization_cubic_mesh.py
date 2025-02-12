@@ -9,8 +9,8 @@ import matplotlib.pyplot as plt
 
 ####### load point cloud #######
 
-scene_id = "tableware_5_12" # "tableware_6_1" # "tableware_5_12" 
-tableware = "cup" # "laptop" # "cup"
+scene_id = "tableware_6_5" # 4_16 4_17 bowl# 5_8 bottle #5_11, 'bottle' #5_12 'cup' #6_1 'laptop'
+tableware = "laptop" 
 
 file_directory = '/home/fuxiao/Projects/Orbbec/concept-graphs/conceptgraph/dataset/external/'
 tableware_ply_path = os.path.join(file_directory, f"{scene_id}", 'exps', 'exp_default', f"{scene_id}_{tableware}_denoised.ply")
@@ -38,7 +38,7 @@ o3d.visualization.draw_geometries([point_cloud, point_cloud_bbox, axis_frame], w
 
 ############ surface voxel grid ############
 print('voxelization in process')
-voxel_size = 0.01  # use the predefined voxel size for specific tableware from voxelize_config.yml 
+voxel_size = 0.005  # use the predefined voxel size for specific tableware from voxelize_config.yml 
 # Bowl: 0.004843219465611634 # Mug: 0.001832966443807953 #HandlessCup: 0.002201045924570001 # Laptop: 0.01
 voxel_grid = o3d.geometry.VoxelGrid.create_from_point_cloud(point_cloud,
                                                             voxel_size=voxel_size)

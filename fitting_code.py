@@ -30,7 +30,7 @@ if __name__ == "__main__":
     )
 
     # prepare data input
-    scene_id = "tableware_6_1" # "tableware_6_1" # "tableware_5_12"
+    scene_id = "tableware_6_5" # 5_11, BeerBottle # "tableware_6_1" # "tableware_5_12"
     object_class = "Laptop"  # "Laptop" # "HandlessCup"
     #object_idx = 4 #     "WineGlass" : 0, "Bowl" : 1, "Bottle" : 2, "BeerBottle" : 3,
     # "HandlessCup" : 4, "Mug" : 5, "Dish" : 6
